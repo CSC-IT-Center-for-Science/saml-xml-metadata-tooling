@@ -1,15 +1,22 @@
-package fi.funet.haka.xmldiffer;
+package fi.funet.fi.haka.xmldiffer;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-//import org.custommonkey.xmlunit.DetailedDiff;
+import org.apache.commons.codec.binary.Base64;
 import org.custommonkey.xmlunit.Diff;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -77,19 +84,33 @@ public class ReadXml {
 			it = remainingEntityList.iterator();
 			while (it.hasNext()) {
 				String entity = it.next();
-				Diff diff = new Diff(
-						getEntityDoc(baseDoc, entity),
-						getEntityDoc(comparableDoc, entity)); 
+				Document baseEntDoc = getEntityDoc(baseDoc, entity); 
+				Document compEntDoc = getEntityDoc(comparableDoc, entity); 
+				Diff diff = new Diff(baseEntDoc, compEntDoc); 
 				//DetailedDiff dd = new DetailedDiff(diff);
 				//dd.overrideElementQualifier(null);
-				if (!diff.identical()) {
-					System.out.println(entity);
-					/*Iterator iter = 
-							dd.getAllDifferences().iterator();
-					while (iter.hasNext()) {
-						Difference d = (Difference) iter.next();
-						System.out.println(dd.toString());
-					}*/
+				if (!diff.similar()) {
+					System.out.println("> " + entity);
+					
+					String certStr;
+					NodeList nl = baseEntDoc.getElementsByTagName("ds:X509Certificate");
+					for (int t = 0, l = nl.getLength(); t < l; t++) {
+						certStr = nl.item(t).getTextContent();
+						if (!certFound(compEntDoc, certStr)) {
+							System.out.println("- cert removed: " + getCertDispStr(certStr));
+					}
+					nl = compEntDoc.getElementsByTagName("ds:X509Certificate");
+					for (t = 0, l = nl.getLength(); t < l; t++) {
+						certStr = nl.item(t).getTextContent();
+						if (!certFound(baseEntDoc, certStr)) {
+							System.out.println("- cert added: " + getCertDispStr(certStr));
+						}
+					}
+					/*Iterator i = dd.getAllDifferences().iterator();
+					while (i.hasNext()) {
+						Difference d = (Difference) i.next();
+						}*/
+					}
 				}
 			}
 						
@@ -99,6 +120,50 @@ public class ReadXml {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+	
+	private static String getCertDispStr (String certStr) {
+		X509Certificate cert = getCert(certStr);
+		Pattern p = Pattern.compile(".*(CN=[^,]+).*");
+		String prName = cert.getSubjectX500Principal().getName();
+		Matcher m = p.matcher(prName);
+		String str;
+		if (m.matches()) {
+			str = m.group(1);
+		} else {
+			str = prName.split(",")[0];
+		}
+		return str + " | NotAfter: " + cert.getNotAfter();
+	}
+	
+	private static boolean certFound(Document doc, String certStr) {
+		NodeList nl = doc.getElementsByTagName("ds:X509Certificate");
+		for (int t = 0, length = nl.getLength(); t < length; t++) {
+			String nodeCertStr = nl.item(t).getTextContent();
+			if (Arrays.equals(
+					getByteArray(certStr),
+					getByteArray(nodeCertStr))) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private static byte[] getByteArray(String certStr) {
+		return Base64.decodeBase64(certStr);
+	}
+	
+	private static X509Certificate getCert(String certStr) {
+		CertificateFactory cf;
+		byte[] dec = getByteArray(certStr); 
+		try {
+			cf = CertificateFactory.getInstance("X.509");
+			return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(dec));
+		} catch (CertificateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 	}
 	
