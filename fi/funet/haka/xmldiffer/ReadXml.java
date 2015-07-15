@@ -9,6 +9,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +20,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.codec.binary.Base64;
 import org.custommonkey.xmlunit.Diff;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -92,25 +94,13 @@ public class ReadXml {
 				if (!diff.similar()) {
 					System.out.println("> " + entity);
 					
-					String certStr;
-					NodeList nl = baseEntDoc.getElementsByTagName("ds:X509Certificate");
-					for (int t = 0, l = nl.getLength(); t < l; t++) {
-						certStr = nl.item(t).getTextContent();
-						if (!certFound(compEntDoc, certStr)) {
-							System.out.println("- cert removed: " + getCertDispStr(certStr));
-					}
-					nl = compEntDoc.getElementsByTagName("ds:X509Certificate");
-					for (t = 0, l = nl.getLength(); t < l; t++) {
-						certStr = nl.item(t).getTextContent();
-						if (!certFound(baseEntDoc, certStr)) {
-							System.out.println("- cert added: " + getCertDispStr(certStr));
-						}
-					}
+					//changedCertificates(baseEntDoc, compEntDoc);
+					changedEndPoints(baseEntDoc, compEntDoc);
+
 					/*Iterator i = dd.getAllDifferences().iterator();
 					while (i.hasNext()) {
 						Difference d = (Difference) i.next();
 						}*/
-					}
 				}
 			}
 						
@@ -120,6 +110,86 @@ public class ReadXml {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+	
+	private static void changedEndPoints (Document baseEntDoc, Document compEntDoc) {
+		List<SamlEndpoint> epList = getEpList(baseEntDoc);
+
+		Iterator<SamlEndpoint> i = epList.iterator();
+		while (i.hasNext()) {
+			SamlEndpoint ep = (SamlEndpoint) i.next();
+			if (!endpointFound(compEntDoc, ep)) {
+				System.out.println("- endpoint removed: " + ep.toString());
+			}
+		}
+		
+		epList = getEpList(compEntDoc);
+		i = epList.iterator();
+		while (i.hasNext()) {
+			SamlEndpoint ep = (SamlEndpoint) i.next();
+			if (!endpointFound(baseEntDoc, ep)) {
+				System.out.println("- endpoint added  : " + ep.toString());
+			}
+		}
+	}
+	
+	private static boolean endpointFound(Document compEntDoc, SamlEndpoint ep) {
+		List<SamlEndpoint> epList = getEpList(compEntDoc);
+		if (epList.contains(ep)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	private static List<SamlEndpoint> getEpList (Document doc) {
+		List<SamlEndpoint> epList = new ArrayList<SamlEndpoint>();
+		if (spFound(doc)) {
+			NodeList nl = doc.getElementsByTagName("AssertionConsumerService");
+			epList.addAll(getEpList(nl));
+		}
+		if (idpFound(doc)) {
+			NodeList nl = doc.getElementsByTagName("SingleSignOnService");
+			epList.addAll(getEpList(nl));
+		}
+		return epList;
+	}
+	
+	private static List<SamlEndpoint> getEpList (NodeList nl) {
+		List<SamlEndpoint> epList = new ArrayList<SamlEndpoint>();
+		for (int t = 0, l = nl.getLength(); t < l; t++) {
+			NamedNodeMap ml = nl.item(t).getAttributes();
+			SamlEndpoint el = new SamlEndpoint(ml.getNamedItem("Location").getNodeValue(), 
+					ml.getNamedItem("Binding").getNodeValue());
+			epList.add(el);
+		}
+		return epList;
+	}
+	
+	private static boolean spFound(Document doc) {
+		return doc.getElementsByTagName("SPSSODescriptor").getLength() > 0;
+	}
+	
+	private static boolean idpFound(Document doc) {
+		return doc.getElementsByTagName("IDPSODescriptor").getLength() > 0;
+	}
+	
+	private static void changedCertificates(Document baseEntDoc, Document compEntDoc) {
+		String certStr;
+		NodeList nl = baseEntDoc.getElementsByTagName("ds:X509Certificate");
+		for (int t = 0, l = nl.getLength(); t < l; t++) {
+			certStr = nl.item(t).getTextContent();
+			if (!certFound(compEntDoc, certStr)) {
+				System.out.println("- cert removed: " + getCertDispStr(certStr));
+			}
+		}
+		nl = compEntDoc.getElementsByTagName("ds:X509Certificate");
+		for (int t = 0, l = nl.getLength(); t < l; t++) {
+			certStr = nl.item(t).getTextContent();
+			if (!certFound(baseEntDoc, certStr)) {
+				System.out.println("- cert added: " + getCertDispStr(certStr));
+			}
 		}
 	}
 	
