@@ -8,8 +8,10 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,17 +20,23 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.Difference;
+import org.custommonkey.xmlunit.NodeDetail;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import fi.funet.fi.haka.xmldiffer.DiffObj.ChangeType;
 
 public class ReadXml {
 	
 	private static DocumentBuilderFactory dbFactory =
 			DocumentBuilderFactory.newInstance();
 	private static DocumentBuilder dBuilder;
+	private static List<DiffObj> change = new ArrayList<DiffObj>();
 	
 	private static void init() {
 		try {
@@ -72,37 +80,32 @@ public class ReadXml {
 				}
 			}
 			
+			appendRemaining(remainingEntityList, baseDoc, comparableDoc);
+
+			if (comparableEntityList.size() > 0) {
+				System.out.println("\n* Added entities:");
+				printList(comparableEntityList);
+			}
+
 			if (baseEntityList.size() > 0) {
 				System.out.println("\n* Removed entities:");
 				printList(removedEntities);
 			}
 			
-			if (comparableEntityList.size() > 0) {
-				System.out.println("\n* Added entities:");
-				printList(comparableEntityList);
-			}
 			
-			System.out.println("\n* Changed entities:");
-			it = remainingEntityList.iterator();
-			while (it.hasNext()) {
-				String entity = it.next();
-				Document baseEntDoc = getEntityDoc(baseDoc, entity); 
-				Document compEntDoc = getEntityDoc(comparableDoc, entity); 
-				Diff diff = new Diff(baseEntDoc, compEntDoc); 
-				//DetailedDiff dd = new DetailedDiff(diff);
-				//dd.overrideElementQualifier(null);
-				if (!diff.similar()) {
-					System.out.println("> " + entity);
-					
-					//changedCertificates(baseEntDoc, compEntDoc);
-					changedEndPoints(baseEntDoc, compEntDoc);
-
-					/*Iterator i = dd.getAllDifferences().iterator();
-					while (i.hasNext()) {
-						Difference d = (Difference) i.next();
-						}*/
-				}
-			}
+			
+			System.out.println("\n* New certificates:");
+			printCerts(DiffObj.ChangeType.add);
+			System.out.println("\n* Retired certificates:");
+			printCerts(DiffObj.ChangeType.remove);
+			System.out.println("\n* New attribute requests:");
+			printAttrs(DiffObj.ChangeType.add);
+			System.out.println("\n* Retired attribute requests:");
+			printAttrs(DiffObj.ChangeType.remove);
+			System.out.println("\n* New endpoints:");
+			printEndpoints(DiffObj.ChangeType.add);
+			System.out.println("\n* Retired endpoints:");
+			printEndpoints(DiffObj.ChangeType.remove);
 						
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
@@ -113,14 +116,154 @@ public class ReadXml {
 		}
 	}
 	
-	private static void changedEndPoints (Document baseEntDoc, Document compEntDoc) {
+	private static void printCerts(DiffObj.ChangeType ct) {
+		Iterator<DiffObj> i = change.iterator();
+		while (i.hasNext()) {
+			DiffObj d = (DiffObj) i.next();
+			if (d.getType() == ct &&
+				d.getElement() instanceof X509Certificate) {
+					System.out.println(d.getEntity() + " : " + getCertDispStr((X509Certificate) d.getElement()));
+				}
+		}
+	}
+	
+	private static void printAttrs(DiffObj.ChangeType ct) {
+		Iterator<DiffObj> i = change.iterator();
+		while (i.hasNext()) {
+			DiffObj d = (DiffObj) i.next();
+			if (d.getType() == ct &&
+				d.getElement() instanceof RequestedAttribute) {
+				RequestedAttribute rt = (RequestedAttribute) d.getElement();
+				System.out.println(d.getEntity() + " : " + rt.toString());
+			}
+		}
+	}
+	
+	private static void printEndpoints(DiffObj.ChangeType ct) {
+		Iterator<DiffObj> i = change.iterator();
+		while (i.hasNext()) {
+			DiffObj d = (DiffObj) i.next();
+			if (d.getType() == ct &&
+				d.getElement() instanceof SamlEndpoint) {
+				SamlEndpoint e = (SamlEndpoint) d.getElement();
+				System.out.println(d.getEntity() + " : " + e.toString());
+			}
+		}
+	}
+
+	private static void appendRemaining (List<String> remainingEntityList, Document baseDoc, Document comparableDoc) {
+		Iterator<String> it = remainingEntityList.iterator();
+		while (it.hasNext()) {
+			String entity = (String) it.next();
+			Document baseEntDoc = getEntityDoc(baseDoc, entity); 
+			Document compEntDoc = getEntityDoc(comparableDoc, entity); 
+			Diff diff = new Diff(baseEntDoc, compEntDoc); 
+			//DetailedDiff dd = new DetailedDiff(diff);
+			//dd.overrideElementQualifier(null);
+			
+			/*String[] blackList = {"KeyDescriptor",
+					"AssertionConsumerService",
+					"SingleSignOnService",
+					"RequestedAttribute"};*/
+			if (!diff.similar()) {
+				//System.out.println("> " + entity);
+			
+				change.addAll(changedCertificates(entity, baseEntDoc, compEntDoc));
+				change.addAll(changedEndPoints(entity, baseEntDoc, compEntDoc));
+				change.addAll(changedAttributeRequests(entity, baseEntDoc, compEntDoc));
+
+				/*Iterator<Difference> i = dd.getAllDifferences().iterator();
+				String previousLocation = "";
+				while (i.hasNext()) {
+					Difference d = (Difference) i.next();
+				
+					if (d.getControlNodeDetail().getNode() != null) {
+						NodeDetail detail = d.getControlNodeDetail();
+						printChangeDetail(detail, blackList, previousLocation);
+						previousLocation = detail.getXpathLocation();
+					} else if (d.getTestNodeDetail().getNode() != null) {
+						NodeDetail detail = d.getTestNodeDetail();
+						printChangeDetail(detail, blackList, previousLocation);
+						previousLocation = detail.getXpathLocation();
+					}
+				}*/
+			}
+		}
+		
+	}
+	
+	private static void printChangeDetail(NodeDetail nodeDet, String[] blackList, String previousLocation) {
+		if (previousLocation.isEmpty() ||
+				nodeDet.getXpathLocation().contains(previousLocation)) return;
+		boolean contains = false;
+		String loc = nodeDet.getXpathLocation();
+		for (String black: blackList) {
+			if (loc.contains(black)) {
+				contains = true;
+				break;
+			}
+		}
+		if (!contains) {
+			System.out.println("- " + nodeDet.getXpathLocation());
+		}
+	}
+	
+	private static List<DiffObj> changedAttributeRequests (String entity, Document baseEntDoc, Document compEntDoc) {
+		List<DiffObj> diffList = new ArrayList<DiffObj>();
+		List<RequestedAttribute> raList = getRaList(baseEntDoc);
+		Iterator<RequestedAttribute> i = raList.iterator();
+		while (i.hasNext()) {
+			RequestedAttribute ra = (RequestedAttribute) i.next();
+			if (!requestedAttributeFound(compEntDoc, ra)) {
+				diffList.add(new DiffObj(entity, ChangeType.remove, ra));
+				//ystem.out.println("- attributeRequest removed: " + ra.toString());
+			}
+		}
+		raList = getRaList(compEntDoc);
+		i = raList.iterator();
+		while (i.hasNext()) {
+			RequestedAttribute ra = (RequestedAttribute) i.next();
+			if (!requestedAttributeFound(baseEntDoc, ra)) {
+				diffList.add(new DiffObj(entity, ChangeType.add, ra));
+				//System.out.println("- attributeRequest added: " + ra.toString());
+			}
+		}
+		return diffList;
+	}
+	
+	private static boolean requestedAttributeFound(Document doc, RequestedAttribute ra) {
+		List<RequestedAttribute> raList = getRaList(doc);
+		if (raList.contains(ra)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	private static List<RequestedAttribute> getRaList(Document doc) {
+		List<RequestedAttribute> raList = new ArrayList<RequestedAttribute>();
+		if (spFound(doc)) {
+			NodeList nl = doc.getElementsByTagName("RequestedAttribute");
+			for (int t = 0, l=nl.getLength(); t<l; t++) {
+				NamedNodeMap nm = nl.item(t).getAttributes();
+				RequestedAttribute ra = new RequestedAttribute(nm.getNamedItem("Name").getNodeValue(),
+						nm.getNamedItem("FriendlyName").getNodeValue());
+				raList.add(ra);
+			}
+		}
+		return raList;
+	}
+	
+	private static List<DiffObj> changedEndPoints (String entity, Document baseEntDoc, Document compEntDoc) {
+		List<DiffObj> diffList = new ArrayList<DiffObj>();
 		List<SamlEndpoint> epList = getEpList(baseEntDoc);
 
 		Iterator<SamlEndpoint> i = epList.iterator();
 		while (i.hasNext()) {
 			SamlEndpoint ep = (SamlEndpoint) i.next();
 			if (!endpointFound(compEntDoc, ep)) {
-				System.out.println("- endpoint removed: " + ep.toString());
+				diffList.add(new DiffObj(entity, ChangeType.remove, ep));
+				//System.out.println("- endpoint removed: " + ep.toString());
 			}
 		}
 		
@@ -129,9 +272,11 @@ public class ReadXml {
 		while (i.hasNext()) {
 			SamlEndpoint ep = (SamlEndpoint) i.next();
 			if (!endpointFound(baseEntDoc, ep)) {
-				System.out.println("- endpoint added  : " + ep.toString());
+				diffList.add(new DiffObj(entity, ChangeType.add, ep));
+				//System.out.println("- endpoint added  : " + ep.toString());
 			}
 		}
+		return diffList;
 	}
 	
 	private static boolean endpointFound(Document compEntDoc, SamlEndpoint ep) {
@@ -175,26 +320,29 @@ public class ReadXml {
 		return doc.getElementsByTagName("IDPSODescriptor").getLength() > 0;
 	}
 	
-	private static void changedCertificates(Document baseEntDoc, Document compEntDoc) {
+	private static List<DiffObj> changedCertificates(String entity, Document baseEntDoc, Document compEntDoc) {
+		List<DiffObj> diffList = new ArrayList<DiffObj>();
 		String certStr;
 		NodeList nl = baseEntDoc.getElementsByTagName("ds:X509Certificate");
 		for (int t = 0, l = nl.getLength(); t < l; t++) {
 			certStr = nl.item(t).getTextContent();
 			if (!certFound(compEntDoc, certStr)) {
-				System.out.println("- cert removed: " + getCertDispStr(certStr));
+				diffList.add(new DiffObj(entity, ChangeType.remove, getCert(certStr)));
+				//System.out.println("- cert removed: " + getCertDispStr(certStr));
 			}
 		}
 		nl = compEntDoc.getElementsByTagName("ds:X509Certificate");
 		for (int t = 0, l = nl.getLength(); t < l; t++) {
 			certStr = nl.item(t).getTextContent();
 			if (!certFound(baseEntDoc, certStr)) {
-				System.out.println("- cert added: " + getCertDispStr(certStr));
+				diffList.add(new DiffObj(entity, ChangeType.add, getCert(certStr)));
+				//System.out.println("- cert added: " + getCertDispStr(certStr));
 			}
 		}
+		return diffList;
 	}
 	
-	private static String getCertDispStr (String certStr) {
-		X509Certificate cert = getCert(certStr);
+	private static String getCertDispStr (X509Certificate cert) {
 		Pattern p = Pattern.compile(".*(CN=[^,]+).*");
 		String prName = cert.getSubjectX500Principal().getName();
 		Matcher m = p.matcher(prName);
@@ -205,6 +353,10 @@ public class ReadXml {
 			str = prName.split(",")[0];
 		}
 		return str + " | NotAfter: " + cert.getNotAfter();
+	}
+	
+	private static String getCertDispStr (String certStr) {
+		return getCertDispStr(getCert(certStr));
 	}
 	
 	private static boolean certFound(Document doc, String certStr) {
