@@ -33,7 +33,7 @@ public class RequestedAttribute {
 	
 	@Override
 	public String toString() {
-		return this.getName() + " | " + this.getFriendlyName();
+		return this.getName() + " | " + this.getFriendlyName() + "\n";
 	}
 	
 	

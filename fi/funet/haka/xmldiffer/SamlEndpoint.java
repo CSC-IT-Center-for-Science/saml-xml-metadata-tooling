@@ -33,7 +33,7 @@ public class SamlEndpoint  {
 	
 	@Override
 	public String toString() {
-		return this.getBinding() + " | " + this.getLocation();
+		return this.getBinding() + " | " + this.getLocation() + "\n";
 	}
 	
 	
