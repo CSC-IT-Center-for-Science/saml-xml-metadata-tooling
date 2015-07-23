@@ -56,6 +56,20 @@
 				<td id="taskUuid"></td>
 			</tr>
 			<tr>
+				<td>Request new task</td>
+				<td><button class="btn" 
+						data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+						data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+						data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+						id="reqTask">Request
+					</button>
+				</td>
+			</tr>
+			<tr>
+				<td id="taskHead">Task status</td>
+				<td id="taskStatus"></td>
+			</tr>
+			<tr>
 				<td>File upload</td>
 				<td><input class="form-control" type="file" id="compFile" />
 				</td>
@@ -70,20 +84,78 @@
 					</button>
 				</td>
 			</tr>
+			<tr>
+				<td>Initiate current fetch</td>
+				<td><button class="btn" 
+						data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+						data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+						data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+						id="fetchCurrent">Fetch current
+					</button>
+				</td>
+			</tr>
+			<tr>
+				<td>Process diff</td>
+				<td><button class="btn" 
+						data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+						data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+						data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+						id="diff">Diff
+					</button>
+				</td>
+			</tr>
+			<tr>
+				<td>Get change</td>
+				<td><button class="btn" 
+						data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+						data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+						data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+						id="getChange">Get
+					</button>
+				</td>
 		</table>
 	</div>
-	<div class="col-sm-12">
+	<div class="col-sm-12" id="change">
 	</div>
 </div>
 <script type="text/javascript">
 	var files;
+	var previousTaskGet = new Date();
+	var taskHead = $("#taskHead").text();
+	
+	function updateTask( data ) {
+		$('#taskUuid').empty();
+		$('#taskUuid').append( data.task );
+		$("#taskStatus").empty();
+		$("#taskStatus").append( data.taskStatus );
+	}
 	
 	$( document ).ready(function() {
 		$.getJSON("/ctrl/?stat=true", function( data ) {
 			$('#sessionStr').val( data.sessStr );
-			$('#taskUuid').empty();
-			$('#taskUuid').append( data.task );
-		})
+			updateTask( data );
+			setInterval (function () {
+				$.ajax({
+					url: "/ctrl/?op=getTaskStatus",
+					timeout: 8000,
+					success: function (data ) {
+						updateTask( data );
+					}
+				});
+				previousTaskGet = new Date();
+			}, 10000);
+		});
+		setInterval( function () {
+			var diff = (new Date() - previousTaskGet) / 1000;
+			var perc = diff * 10;
+			var diffDisp = Math.round( perc );
+			$("#taskHead").empty();
+			var bas = "<div class='progress pull-right' style='width: 6em;'>" +
+  				'<div class="progress-bar" role="progressbar" aria-valuenow="' + perc + '" aria-valuemin="0" ' +
+  				'aria-valuemax="100" style="width: ' + perc + '%;">' +
+    			'<span class="sr-only">' + diffDisp + '</span></div></div>';
+			$("#taskHead").append(taskHead + bas);
+		}, 500);
 	});
 	
 	$('#sessionStr').on('keypress', function ( event ) {
@@ -157,9 +229,9 @@
 		event.preventDefault();
 		var btn = $(this);
 		btn.button('loading');
-		setTimeout(function () {
+		/*setTimeout(function () {
 			btn.button('reset');
-		}, 30000);
+		}, 30000);*/
 		$.get( "https://rr.funet.fi/rr/metadata.php?fed=1", function ( data ) {
 			if ($.isXMLDoc( data )) {
 				btn.button('done');
@@ -169,6 +241,66 @@
 		} );
 	});
 	
-</script>
+	$('#fetchCurrent').on('click', function ( event ) {
+		event.preventDefault();
+		var btn = $(this);
+		btn.button('loading');
+		$.get( '/ctrl/?op=fetchCurrent', function ( data ) {
+			if ( data.opStat == "currentFetchOk") {
+				btn.button('done');
+			}
+			if ( data.opStat == 'currentFetchFail') {
+				btn.button('error');
+			}
+		});
+	});
+	
+	$('#diff').on('click', function ( event ) {
+		event.preventDefault();
+		var btn = $(this);
+		btn.button('loading');
+		$.get( '/ctrl/?op=processDiff', function ( data ) {
+			if ( data.opStat == "diffOk") {
+				btn.button('done');
+			}
+			if ( data.opStat == 'diffError') {
+				btn.button('error');
+			}
+		});
+	});
+
+	$('#getChange').on('click', function ( event ) {
+		event.preventDefault();
+		var btn = $(this);
+		btn.button('loading');
+		$.get( '/ctrl/?op=getChange', function ( data ) {
+			if ( data.length > 0) {
+				btn.button('done');
+			} else {
+				btn.button('error');
+			}
+			$("#change").empty();
+			$("#change").append("<pre>" + data + "</pre>");
+		});
+	});
+
+	$('#reqTask').on('click', function ( event ) {
+		event.preventDefault();
+		var btn = $(this);
+		btn.button('loading');
+		setTimeout(function () {
+			btn.button('reset');
+		}, 10000);
+		$.get( '/ctrl/?op=reqTask', function ( data ) {
+			if ( data.opStat == "newTask") {
+				btn.button('done');
+				updateTask( data );
+			} 
+			if ( data.opStat == "newTaskError") {
+				btn.button('error');
+			}
+		});
+	});
+	</script>
 </body>
 </html>

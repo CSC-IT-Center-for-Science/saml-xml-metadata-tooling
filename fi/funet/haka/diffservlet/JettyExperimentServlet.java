@@ -1,11 +1,11 @@
 package fi.funet.haka.diffservlet;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,7 +17,6 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -102,10 +101,44 @@ public class JettyExperimentServlet extends HttpServlet {
 		String sessStr = (String) req.getSession().getAttribute("sessionStr");
 		JSONObject jsO = new JSONObject();
 		String sessId = req.getSession().getId();
-		jsO.put("task", getTask(sessId).getUuid());
 		if (str != null && str.equals("true") && sessStr != null) {
 			jsO.put("sessStr", sessStr);
 		}
+		String op = req.getParameter("op");
+		Task task = getTask(sessId);
+		if (op != null && op.equals("getChange")) {
+			resp.setContentType("text/plain");
+			try {
+				PrintWriter wr = resp.getWriter();
+				wr.write(task.getChangeString());
+				wr.flush();
+				wr.close();
+				return;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if (op != null && op.equals("fetchCurrent")) {
+			if (task.fetchCurrent()) {
+				jsO.put("opStat", "currentFetchOk");
+			} else {
+				jsO.put("opStat", "currentFetchFail");
+			}
+		}
+		if (op != null && op.equals("processDiff")) {
+			if (task.doDiff()) {
+				jsO.put("opStat", "diffOk");
+			} else {
+				jsO.put("opStat", "diffError");
+			}
+		}
+		if (op != null && op.equals("reqTask")) {
+			task = getNewTask(sessId);
+			jsO.put("opStat", "newTask");
+		}
+		jsO.put("taskStatus", task.getStatus().toString());
+		jsO.put("task", task.getUuid());
 		resp.setStatus(HttpServletResponse.SC_OK);
 		resp.setContentType("application/json");
 		try {
@@ -124,7 +157,15 @@ public class JettyExperimentServlet extends HttpServlet {
 		} else {
 			return taskList.get(sessId);
 		}
-
+	}
+	
+	private Task getNewTask(String sessId) {
+		if (taskList.containsKey(sessId)) {
+			taskList.remove(sessId);
+		} 
+		Task task = new Task();
+		taskList.put(sessId, task);
+		return task;
 	}
 	
 }
