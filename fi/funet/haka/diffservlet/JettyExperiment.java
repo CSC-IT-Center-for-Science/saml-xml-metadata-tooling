@@ -31,11 +31,12 @@ public class JettyExperiment {
 
         sessions.setHandler(sh);
         
+        String path = JettyExperiment.class.getClassLoader().getResource("resources/html/").toExternalForm();
+        
         ResourceHandler rh = new ResourceHandler();
         rh.setDirectoriesListed(true);
         rh.setWelcomeFiles(new String[] {"index.html"});
-        rh.setResourceBase("/Users/karppa/CSC/JettyExperiment/html/");
-        
+        rh.setResourceBase(path);
         
         HandlerList hl = new HandlerList();
         hl.setHandlers(new Handler[] { rh, sessions, new DefaultHandler() });

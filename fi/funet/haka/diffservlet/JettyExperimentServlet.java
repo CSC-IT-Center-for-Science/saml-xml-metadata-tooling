@@ -1,9 +1,11 @@
 package fi.funet.haka.diffservlet;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,6 +17,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -41,9 +44,9 @@ public class JettyExperimentServlet extends HttpServlet {
 		}
 		
 		str = req.getParameter("files");
+		String sessId = req.getSession().getId();
 		if (str != null && ServletFileUpload.isMultipartContent(req)) {
 			ServletFileUpload fu = new ServletFileUpload(new DiskFileItemFactory());
-			String sessId = req.getSession().getId();
 			List<?> files;
 			try {
 				files = fu.parseRequest(req);
@@ -58,8 +61,25 @@ public class JettyExperimentServlet extends HttpServlet {
 				e.printStackTrace();
 				jsO.put("status", "error");
 			}
-			
-			
+		} else if (req.getContentType().equals("application/xml")) {
+			try {
+				InputStream is = req.getInputStream();
+				DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+				DocumentBuilder builder;
+				try {
+					builder = fac.newDocumentBuilder();
+					Document doc = builder.parse(is);
+					getTask(sessId).setComp(doc);
+					jsO.put("status", "ok");
+				} catch (ParserConfigurationException | SAXException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					jsO.put("status", "error");
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		if (jsO.length() == 0) {
@@ -82,7 +102,7 @@ public class JettyExperimentServlet extends HttpServlet {
 		String sessStr = (String) req.getSession().getAttribute("sessionStr");
 		JSONObject jsO = new JSONObject();
 		String sessId = req.getSession().getId();
-		jsO.put("task", getTask(sessId));
+		jsO.put("task", getTask(sessId).getUuid());
 		if (str != null && str.equals("true") && sessStr != null) {
 			jsO.put("sessStr", sessStr);
 		}
