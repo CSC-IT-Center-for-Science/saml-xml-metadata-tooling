@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Jetty Experiment</title>
+
+	<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css"
+      type="text/css"  />
+	<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+	<style>
+	.glyphicon-spin {
+    	-webkit-animation: spin 1000ms infinite linear;
+    	animation: spin 1000ms infinite linear;
+	}
+	@-webkit-keyframes spin {
+	  0% {
+	    -webkit-transform: rotate(0deg);
+	    transform: rotate(0deg);
+	  }
+	  100% {
+	    -webkit-transform: rotate(359deg);
+	    transform: rotate(359deg);
+	  }
+	}
+	@keyframes spin {
+	  0% {
+	    -webkit-transform: rotate(0deg);
+	    transform: rotate(0deg);
+	  }
+	  100% {
+	    -webkit-transform: rotate(359deg);
+	    transform: rotate(359deg);
+	  }
+	}	
+	</style>
+</head>
+<body>
+<div class="container">
+	<div class="col-md-12">
+		<h1>Jetty Experiment</h1>
+	</div>
+	<div class="col-sm-12">
+		<table class="table">
+			<tr>
+				<td>Session string</td>
+				<td><input class="form-control" type="text" id="sessionStr" name="sessionStr" />
+				</td>
+			</tr>
+			<tr>
+				<td>Task UUID</td>
+				<td id="taskUuid"></td>
+			</tr>
+			<tr>
+				<td>File upload</td>
+				<td><input class="form-control" type="file" id="compFile" />
+				</td>
+			</tr>
+			<tr>
+				<td>Download file from RR</td>
+				<td id="rrDownTd">
+					<button class="btn" 
+						data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+						data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+						id="rrDown">Fetch
+					</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div class="col-sm-12">
+	</div>
+</div>
+<script type="text/javascript">
+	var files;
+	
+	$( document ).ready(function() {
+		$.getJSON("/ctrl/?stat=true", function( data ) {
+			$('#sessionStr').val( data.sessStr );
+			$('#taskUuid').empty();
+			$('#taskUuid').append( data.task );
+		})
+	});
+	
+	$('#sessionStr').on('keypress', function ( event ) {
+		if(event.which == 13) {
+			event.preventDefault();
+			var data = {'sessionStr': $('#sessionStr').val() };
+			$.post('/ctrl/', data);
+		}
+	});
+	
+	function prepareUpload(event)
+	{
+	  files = event.target.files;
+	}
+	
+	$('input[type=file]').on('change', prepareUpload);
+	
+	function uploadFile( file ) {
+	    $.ajax({
+	        url: '/ctrl/?files=upload',
+	        type: 'POST',
+	        data: file,
+	        cache: false,
+	        dataType: 'json',
+	        processData: false, // Don't process the files
+	        contentType: false, // Set content type to false as jQuery will tell the server its a query string request
+	        success: function(data, textStatus, jqXHR)
+	        {
+	            if(typeof data.error === 'undefined')
+	            {
+	                // Success so call function to process the form
+	                //submitForm(event, data);
+	            }
+	            else
+	            {
+	                // Handle errors here
+	                console.log('ERRORS: ' + data.error);
+	            }
+	        },
+	        error: function(jqXHR, textStatus, errorThrown)
+	        {
+	            // Handle errors here
+	            console.log('ERRORS: ' + textStatus);
+	            // STOP LOADING SPINNER
+	        }
+	    });
+	}
+	
+	function uploadFiles(event)
+	{
+	    event.stopPropagation(); // Stop stuff happening
+	    event.preventDefault(); // Totally stop stuff happening
+
+	    // START A LOADING SPINNER HERE
+
+	    // Create a formdata object and add the files
+	    var data = new FormData();
+	    $.each(files, function(key, value)
+	    {
+	        data.append(key, value);
+	    });
+
+	    uploadFile( data );
+	}
+	
+	$('#compFile').on('change', uploadFiles);
+	
+	var rrMdFile;
+	
+	$('#rrDown').on('click', function ( event ) {
+		event.preventDefault();
+		var btn = $(this);
+		btn.button('loading');
+		setTimeout(function () {
+			btn.button('reset');
+		}, 30000);
+		$.get( "https://rr.funet.fi/rr/metadata.php?fed=1", function ( data ) {
+			if ($.isXMLDoc( data )) {
+				btn.button('done');
+				rrMdFile = data;
+				uploadFile( data );
+			}
+		} );
+	});
+	
+</script>
+</body>
+</html>
