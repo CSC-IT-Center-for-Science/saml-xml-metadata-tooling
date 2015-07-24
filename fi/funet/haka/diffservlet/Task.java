@@ -2,6 +2,7 @@ package fi.funet.haka.diffservlet;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Date;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -22,25 +23,61 @@ public class Task {
 	private String myUuid = UUID.randomUUID().toString();
 	public enum status {
 		initiated, fetchingCurrent, currentFetched, compSet,
-		processingDiff, diffError, diffProcessed
+		baseSet, readyForDiff, processingDiff, diffError, diffProcessed
 	}
 	private status myStatus = status.initiated;
 	private Change change;
+	private Date latestAccess = new Date();
 	
 	public String getUuid() {
 		return myUuid;
 	}
 	
 	public status getStatus() {
+		touch();
 		return this.myStatus;
 	}
 	
+	public long idleSeconds() {
+		return (new Date().getTime() - latestAccess.getTime()) / 1000;
+	}
+	
+	public boolean isActive() {
+		return idleSeconds() < 600;
+	}
+	
+	private void touch() {
+		this.latestAccess = new Date();
+	}
+	
 	public void setComp (Document doc) {
+		touch();
 		this.comp = doc;
-		this.myStatus = status.compSet;
+		if (!isDiffReady()) {
+			this.myStatus = status.compSet;
+		}
+	}
+	
+	public void setBase (Document doc) {
+		touch();
+		this.base = doc;
+		if (!isDiffReady()) {
+			this.myStatus = status.baseSet;
+		}
+	}
+	
+	private boolean isDiffReady() {
+		touch();
+		if (base != null && comp != null) {
+			this.myStatus = status.readyForDiff;
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	public boolean fetchCurrent() {
+		touch();
 		try {
 			this.myStatus = status.fetchingCurrent;
 			URL url = new URL("https://haka.funet.fi/metadata/haka-metadata.xml");
@@ -60,6 +97,7 @@ public class Task {
 	}
 	
 	public boolean doDiff() {
+		touch();
 		if (base == null || comp == null) { return false; }
 		this.myStatus = status.processingDiff;
 		try {
@@ -75,6 +113,7 @@ public class Task {
 	}
 	
 	public String getChangeString() {
+		touch();
 		if (myStatus == status.diffProcessed) {
 			return change.toString();
 		} else {
