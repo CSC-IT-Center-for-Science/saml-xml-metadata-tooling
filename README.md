@@ -1,6 +1,6 @@
 # XmlDiffer #
 
-XmlDiffer is an Java project to compare two SAML XML metadata files with each other for changes. Currently it is specifically amed to serve [Haka federation](https://confluence.csc.fi/x/CYvAAQ), but may be of use also for other SAML based federations with minor modifications.
+XmlDiffer is an Java project to compare two SAML XML metadata files with each other for changes. Currently it is specifically aimed to serve [Haka federation](https://confluence.csc.fi/x/CYvAAQ), but may be of use also for other SAML based federations with minor modifications.
 
 The project is on development status and should not be considered as production ready.
 
