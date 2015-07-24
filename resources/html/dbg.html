@@ -149,12 +149,12 @@
 	}
 	
 	$( document ).ready(function() {
-		$.getJSON("/ctrl/?op=getSessStr", function( data ) {
+		$.getJSON("ctrl/?op=getSessStr", function( data ) {
 			$('#sessionStr').val( data.sessStr );
 			updateTask( data );
 			/*setInterval (function () {
 				$.ajax({
-					url: "/ctrl/?op=getTaskStatus",
+					url: "ctrl/?op=getTaskStatus",
 					timeout: 8000,
 					success: function (data ) {
 						updateTask( data );
@@ -180,13 +180,13 @@
 		if(event.which == 13) {
 			event.preventDefault();
 			var data = {'sessionStr': $('#sessionStr').val() };
-			$.post('/ctrl/', data);
+			$.post('ctrl/', data);
 		}
 	});
 	
 	function uploadFile( fileUp ) {
 	    $.ajax({
-	        url: '/ctrl/',
+	        url: 'ctrl/',
 	        type: 'POST',
 	        data: fileUp,
 	        cache: false,
@@ -244,7 +244,7 @@
 		event.preventDefault();
 		var btn = $(this);
 		btn.button('loading');
-		$.get( '/ctrl/?op=fetchCurrent', function ( data ) {
+		$.get( 'ctrl/?op=fetchCurrent', function ( data ) {
 			if ( data.opStat == "currentFetchOk") {
 				btn.button('done');
 			}
@@ -259,7 +259,7 @@
 		event.preventDefault();
 		var btn = $(this);
 		btn.button('loading');
-		$.get( '/ctrl/?op=processDiff', function ( data ) {
+		$.get( 'ctrl/?op=processDiff', function ( data ) {
 			if ( data.opStat == "diffOk") {
 				btn.button('done');
 			}
@@ -274,7 +274,7 @@
 		event.preventDefault();
 		var btn = $(this);
 		btn.button('loading');
-		$.get( '/ctrl/?op=getChange', function ( data ) {
+		$.get( 'ctrl/?op=getChange', function ( data ) {
 			if ( data.length > 0) {
 				btn.button('done');
 			} else {
@@ -293,7 +293,7 @@
 		setTimeout(function () {
 			btn.button('reset');
 		}, 10000);
-		$.get( '/ctrl/?op=reqTask', function ( data ) {
+		$.get( 'ctrl/?op=reqTask', function ( data ) {
 			if ( data.opStat == "newTask") {
 				btn.button('done');
 				updateTask( data );
@@ -311,7 +311,7 @@
 		setTimeout(function () {
 			btn.button('reset');
 		}, 2000);
-		$.get( '/ctrl/?op=getTaskStatus', function ( data ) {
+		$.get( 'ctrl/?op=getTaskStatus', function ( data ) {
 			updateTask( data );
 			btn.button('done');
 		});

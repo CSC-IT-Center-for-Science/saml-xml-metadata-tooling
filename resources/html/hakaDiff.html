@@ -65,11 +65,11 @@
 	</nav>
 
 	<div class="container-fluid">
-	<div class="col-md-offset-8 col-md-4">
+	<div class="col-md-offset-9 col-md-3">
 		<table class="table">
 			<tr>
 				<td>Diff task status</td>
-				<td id="taskStatus"></td>
+				<td class='pull-right' id="taskStatus"></td>
 			</tr>
 		</table>
 	</div>
@@ -78,9 +78,15 @@
 	</div>
 <script type="text/javascript">
 
+	var spinner = "<span class='glyphicon glyphicon-time glyphicon-spin' aria-hidden='true'></span>";
+
+	function updateTask( data ) {
+		$("#taskStatus").empty().append( spinner + " " + data.taskStatus );
+	}
+	
 	function uploadFile( fileUp ) {
 	    $.ajax({
-	        url: '/ctrl/',
+	        url: 'ctrl/',
 	        type: 'POST',
 	        data: fileUp,
 	        cache: false,
@@ -111,25 +117,22 @@
 	}
 	
 	function doDiff() {
-		$.get( '/ctrl/?op=processDiff', function ( data ) {
+		$.get( 'ctrl/?op=processDiff', function ( data ) {
 			if ( data.opStat == "diffOk") {
-				$.get( '/ctrl/?op=getChange', function ( data ) {
+				$.get( 'ctrl/?op=getChange', function ( data ) {
 					if ( data.length > 0) {
 						$("#change").empty();
 						$("#change").append("<pre>" + data + "</pre>");
+						$('#taskStatus').empty().append(
+								"<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>");
 					}
-					updateTask( data );
 				});
 			}
 		});
 	}
 
-	function updateTask( data ) {
-		$("#taskStatus").empty().append( data.taskStatus );
-	}
-	
 	function getTaskStatus() {
-		$.get( '/ctrl/?op=getTaskStatus', function ( data ) {
+		$.get( 'ctrl/?op=getTaskStatus', function ( data ) {
 			updateTask( data );
 			if (data.taskStatus == 'readyForDiff') {
 				doDiff();
@@ -138,7 +141,7 @@
 	}
 	
 	function initDiff() {
-		$.get( '/ctrl/?op=fetchCurrent', function ( data ) {
+		$.get( 'ctrl/?op=fetchCurrent', function ( data ) {
 			if ( data.opStat == "currentFetchOk") {
 				updateTask( data );
 				$.get( "https://rr.funet.fi/rr/metadata.php?fed=1", function ( data ) {
@@ -151,7 +154,7 @@
 	}
 	
 	$( document ).ready(function() {
-		$.get( '/ctrl/?op=getTaskStatus', function ( data ) {
+		$.get( 'ctrl/?op=getTaskStatus', function ( data ) {
 			updateTask( data );
 			if (data.taskStatus != "initiated") {
 				$.get( '/ctrl/?op=reqTask', function ( data ) {
