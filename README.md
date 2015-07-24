@@ -14,3 +14,5 @@ The package may also be driven from the command line with arguments.
 
 * what is a SAML federation
 * what is Haka
+
+If you find something to change, add an issue or create a pull request.
