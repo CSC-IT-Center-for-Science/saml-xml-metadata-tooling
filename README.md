@@ -4,6 +4,16 @@ XmlDiffer is an Java project to compare two SAML XML metadata files with each ot
 
 The project is on development status and should not be considered as production ready.
 
+### Requirements ###
+
+* [xmlunit](http://www.xmlunit.org)
+* Apache Commons
+    * [codec](https://commons.apache.org/proper/commons-codec/)
+    * [fileUpload](https://commons.apache.org/proper/commons-fileupload/)
+        * [io](https://commons.apache.org/proper/commons-io/)
+* [json.org](http://mvnrepository.com/artifact/org.json/json)
+* [Jetty](http://www.eclipse.org/jetty/documentation/9.2.8.v20150217/advanced-embedding.html#downloading-jars)
+
 ### Set up ###
 
 Project is supposed to be run in embedded Jetty server. The code will be compiled to a single jar package. Running the JettyExperiment class main method will launch the diff service within standalone Jetty server. Practically, a proxy is needed in front of the server. Use Apache ProxyPass or similar.
