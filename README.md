@@ -20,7 +20,7 @@ Project is supposed to be run in embedded Jetty server. The code will be compile
 
 The package may also be driven from the command line with arguments.
 
-### Who do I talk to? ###
+### What is this federation thing all about? ###
 
 * what is a [SAML](https://www.oasis-open.org/committees/download.php/13525/sstc-saml-exec-overview-2.0-cd-01-2col.pdf)
 * what is [Haka](https://confluence.csc.fi/x/CYvAAQ)
