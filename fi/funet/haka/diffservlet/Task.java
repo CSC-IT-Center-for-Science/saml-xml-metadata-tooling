@@ -87,7 +87,7 @@ public class Task {
 			builder = fac.newDocumentBuilder();
 			Document doc = builder.parse(conn.getInputStream());
 			this.base = doc;
-			this.myStatus = status.currentFetched;
+			this.myStatus = status.currentFetched; 
 			return true;
 		} catch (IOException | ParserConfigurationException | SAXException e) {
 			// TODO Auto-generated catch block

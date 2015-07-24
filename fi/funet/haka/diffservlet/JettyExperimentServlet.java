@@ -79,10 +79,10 @@ public class JettyExperimentServlet extends HttpServlet {
 		String sessId = req.getSession().getId();
 		if (ServletFileUpload.isMultipartContent(req)) {
 			ServletFileUpload fu = new ServletFileUpload(new DiskFileItemFactory());
-			List<FileItem> files;
+			List<?> files;
 			try {
 				files = fu.parseRequest(req);
-				String name = files.get(0).getFieldName();
+				String name = ((FileItem) files.get(0)).getFieldName();
 				FileItem item = (FileItem) files.get(0);
 				DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
 				DocumentBuilder builder = fac.newDocumentBuilder();
@@ -102,7 +102,7 @@ public class JettyExperimentServlet extends HttpServlet {
 				e.printStackTrace();
 				jsO.put("status", "error");
 			}
-		} else if (req.getContentType().equals("application/xml")) {
+		} else if (req.getContentType().matches("application/xml.*")) {
 			try {
 				InputStream is = req.getInputStream();
 				DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
@@ -121,6 +121,8 @@ public class JettyExperimentServlet extends HttpServlet {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		} else {
+			System.out.println(req.getContentType());
 		}
 		
 		if (jsO.length() == 0) {
