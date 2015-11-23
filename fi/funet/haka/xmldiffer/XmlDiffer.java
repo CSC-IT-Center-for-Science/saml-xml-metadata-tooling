@@ -209,7 +209,7 @@ public class XmlDiffer {
 	}
 	
 	private static boolean idpFound(Document doc) {
-		return doc.getElementsByTagName("IDPSODescriptor").getLength() > 0;
+		return doc.getElementsByTagName("IDPSSODescriptor").getLength() > 0;
 	}
 	
 	private static List<DiffObj> changedAttributeRequests (String entity, Document baseEntDoc, Document compEntDoc) {
