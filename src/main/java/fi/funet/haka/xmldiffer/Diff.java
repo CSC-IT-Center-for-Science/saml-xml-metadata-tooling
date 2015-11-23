@@ -1,4 +1,4 @@
-package fi.funet.fi.haka.xmldiffer;
+package fi.funet.haka.xmldiffer;
 
 import java.io.File;
 import java.io.IOException;

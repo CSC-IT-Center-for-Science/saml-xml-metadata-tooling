@@ -1,4 +1,4 @@
-package fi.funet.fi.haka.xmldiffer;
+package fi.funet.haka.xmldiffer;
 
 public class DiffObj {
 	public enum ChangeType { add, remove, other };

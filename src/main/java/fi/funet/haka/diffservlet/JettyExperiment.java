@@ -31,7 +31,7 @@ public class JettyExperiment {
 
         sessions.setHandler(sh);
         
-        String path = JettyExperiment.class.getClassLoader().getResource("resources/html/").toExternalForm();
+        String path = JettyExperiment.class.getClassLoader().getResource("html/").toExternalForm();
         
         ResourceHandler rh = new ResourceHandler();
         rh.setDirectoriesListed(true);

@@ -1,4 +1,4 @@
-package fi.funet.fi.haka.xmldiffer;
+package fi.funet.haka.xmldiffer;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateException;
@@ -19,7 +19,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
-import fi.funet.fi.haka.xmldiffer.DiffObj.ChangeType;
+import fi.funet.haka.xmldiffer.DiffObj.ChangeType;
 
 public class XmlDiffer {
 	
