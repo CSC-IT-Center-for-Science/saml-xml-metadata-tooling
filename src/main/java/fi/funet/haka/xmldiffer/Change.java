@@ -80,11 +80,11 @@ public class Change {
 			if (d.getType() == ct) {
 				if (c.equals(X509Certificate.class) &&
 						X509Certificate.class.isAssignableFrom(d.getElement().getClass())) {
-					out.append(getCertDispStr(
+					out.append(d.getEntity() + " | " + getCertDispStr(
 							(X509Certificate) d.getElement()));
 				} else if (d.getElement().getClass().equals(c)) {
 					Object o = d.getElement();
-					out.append(o.toString());
+					out.append(d.getEntity() + " | " + o.toString());
 				}
 			}
 		}
