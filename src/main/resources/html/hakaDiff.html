@@ -157,7 +157,7 @@
 		$.get( 'ctrl/?op=getTaskStatus', function ( data ) {
 			updateTask( data );
 			if (data.taskStatus != "initiated") {
-				$.get( '/ctrl/?op=reqTask', function ( data ) {
+				$.get( 'ctrl/?op=reqTask', function ( data ) {
 					updateTask ( data );
 				});				
 			}
