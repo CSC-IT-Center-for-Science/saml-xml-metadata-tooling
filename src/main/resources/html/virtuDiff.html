@@ -51,14 +51,13 @@
 	        <span class="icon-bar"></span>
 	        <span class="icon-bar"></span>
 	      </button>
-	      <a class="navbar-brand" href="/rr/menu.php">Haka-RR</a>
+	      <a class="navbar-brand" href="https://virtus.csc.fi/rr/menu.php">Virtu-RR</a>
 	    </div>
 	    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 	      <ul class="nav navbar-nav">
-	        <li><a href="/rr/admin_menu.php">Federation Admin</a></li>
-	        <li><a href="/rr/idpmenu.php">Manage IdPs</a></li>
-	        <li><a href="/rr/spmenu.php">Manage SPs</a></li>
-	        <li><a href="/rr/stats.php">Statistics</a></li>
+	        <li><a href="https://virtus.csc.fi/rr/admin_menu.php">Federation Admin</a></li>
+	        <li><a href="https://virtus.csc.fi/rr/idpmenu.php">Manage IdPs</a></li>
+	        <li><a href="https://virtus.csc.fi/rr/spmenu.php">Manage SPs</a></li>
 	      </ul>
 	    </div>
 	  </div>
@@ -79,6 +78,7 @@
 <script type="text/javascript">
 
 	var spinner = "<span class='glyphicon glyphicon-time glyphicon-spin' aria-hidden='true'></span>";
+	var pendingUrl = "https://virtus.csc.fi/rr/metadata.php?fed=1";
 
 	function updateTask( data ) {
 		$("#taskStatus").empty().append( spinner + " " + data.taskStatus );
@@ -144,7 +144,7 @@
 		$.get( 'ctrl/?op=fetchCurrent', function ( data ) {
 			if ( data.opStat == "currentFetchOk") {
 				updateTask( data );
-				$.get( "https://rr.funet.fi/rr/metadata.php?fed=1", function ( data ) {
+				$.get( pendingUrl , function ( data ) {
 					if ($.isXMLDoc( data )) {
 						uploadFile( data );
 					}
@@ -154,10 +154,10 @@
 	}
 	
 	$( document ).ready(function() {
-		$.get( 'ctrl/?op=getTaskStatus', function ( data ) {
+		$.get( 'ctrl/?op=getTaskStatus&flavor=virtu', function ( data ) {
 			updateTask( data );
 			if (data.taskStatus != "initiated") {
-				$.get( 'ctrl/?op=reqTask', function ( data ) {
+				$.get( 'ctrl/?op=reqTask&flavor=virtu', function ( data ) {
 					updateTask ( data );
 				});				
 			}

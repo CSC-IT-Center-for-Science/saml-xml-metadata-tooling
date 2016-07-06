@@ -27,6 +27,8 @@ import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import fi.funet.haka.diffservlet.Task.TaskFlavor;
+
 
 public class JettyExperimentServlet extends HttpServlet {
 
@@ -145,7 +147,8 @@ public class JettyExperimentServlet extends HttpServlet {
 		String sessStr = (String) req.getSession().getAttribute("sessionStr");
 		String sessId = req.getSession().getId();
 		String op = req.getParameter("op");
-		Task task = getTask(sessId);
+		TaskFlavor flavor = Configuration.findFlavorFromRequest(req); 
+		Task task = getTask(sessId, flavor);
 		jsO.put("taskIdle", task.idleSeconds());
 		if (op != null) {
 			switch (op) {
@@ -179,7 +182,8 @@ public class JettyExperimentServlet extends HttpServlet {
 					}
 					break;
 				case "reqTask":
-					task = getNewTask(sessId); 
+					task = getNewTask(sessId, 
+							Configuration.findFlavorFromRequest(req)); 
 					jsO.put("opStat", "newTask");
 					break;
 			}
@@ -199,8 +203,12 @@ public class JettyExperimentServlet extends HttpServlet {
 	}
 	
 	private Task getTask(String sessId) {
+		return getTask(sessId, Configuration.DEFAULT_FLAVOR);
+	}
+	
+	private Task getTask(String sessId, TaskFlavor flavor) {
 		if (!taskList.containsKey(sessId)) {
-			Task task = new Task();
+			Task task = getNewTask(sessId, flavor);
 			taskList.put(sessId, task);
 			return task;
 		} else {
@@ -208,11 +216,11 @@ public class JettyExperimentServlet extends HttpServlet {
 		}
 	}
 	
-	private Task getNewTask(String sessId) {
+	private Task getNewTask(String sessId, TaskFlavor flavor) {
 		if (taskList.containsKey(sessId)) {
 			taskList.remove(sessId);
 		} 
-		Task task = new Task();
+		Task task = new Task(flavor);
 		taskList.put(sessId, task);
 		return task;
 	}

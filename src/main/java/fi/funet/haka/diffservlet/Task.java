@@ -17,6 +17,12 @@ import fi.funet.haka.xmldiffer.XmlDiffer;
 
 
 public class Task {
+	
+	public static enum TaskFlavor {
+		VIRTU, HAKA
+	}
+	
+	private TaskFlavor myFlavor;
 
 	private Document base;
 	private Document comp;
@@ -28,6 +34,10 @@ public class Task {
 	private status myStatus = status.initiated;
 	private Change change;
 	private Date latestAccess = new Date();
+	
+	public Task (TaskFlavor myFlavorArg) {
+		this.myFlavor = myFlavorArg;
+	}
 	
 	public String getUuid() {
 		return myUuid;
@@ -80,7 +90,18 @@ public class Task {
 		touch();
 		try {
 			this.myStatus = status.fetchingCurrent;
-			URL url = new URL("https://haka.funet.fi/metadata/haka-metadata.xml");
+			URL url;
+			switch (myFlavor) {
+				case HAKA:
+					url = new URL(Configuration.getCurrentUrlHaka());
+					break;
+				case VIRTU:
+					url = new URL(Configuration.getCurrentUrlVirtu());
+					break;
+				default:
+					url = new URL(Configuration.getCurrentUrlHaka());
+					break;
+			}
 			URLConnection conn = url.openConnection(); 
 			DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder;
