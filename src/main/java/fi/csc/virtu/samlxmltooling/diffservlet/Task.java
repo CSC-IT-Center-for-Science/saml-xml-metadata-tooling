@@ -1,4 +1,4 @@
-package fi.funet.haka.diffservlet;
+package fi.csc.virtu.samlxmltooling.diffservlet;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -12,8 +12,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import fi.funet.haka.xmldiffer.Change;
-import fi.funet.haka.xmldiffer.XmlDiffer;
+import fi.csc.virtu.samlxmltooling.xmldiffer.Change;
+import fi.csc.virtu.samlxmltooling.xmldiffer.XmlDiffer;
 
 
 public class Task {

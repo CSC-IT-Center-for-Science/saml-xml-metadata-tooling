@@ -1,4 +1,4 @@
-package fi.funet.haka.xmldiffer;
+package fi.csc.virtu.samlxmltooling.xmldiffer;
 
 public class RequestedAttribute {
 

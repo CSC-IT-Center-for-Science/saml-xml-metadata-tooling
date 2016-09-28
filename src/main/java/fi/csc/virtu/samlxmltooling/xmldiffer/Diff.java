@@ -1,4 +1,4 @@
-package fi.funet.haka.xmldiffer;
+package fi.csc.virtu.samlxmltooling.xmldiffer;
 
 import java.io.File;
 import java.io.IOException;

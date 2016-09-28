@@ -1,8 +1,8 @@
-package fi.funet.haka.diffservlet;
+package fi.csc.virtu.samlxmltooling.diffservlet;
 
 import javax.servlet.http.HttpServletRequest;
 
-import fi.funet.haka.diffservlet.Task.TaskFlavor;
+import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
 
 public final class Configuration {
 

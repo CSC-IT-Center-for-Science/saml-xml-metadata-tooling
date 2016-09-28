@@ -1,4 +1,4 @@
-package fi.funet.haka.xmldiffer;
+package fi.csc.virtu.samlxmltooling.xmldiffer;
 
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
