@@ -177,7 +177,6 @@
 	});
 	
 	function uploadFile( fileUp, target ) {
-		console.log(fileUp);
 	    $.ajax({
 	        url: target,
 	        type: 'POST',
@@ -212,7 +211,6 @@
 	$('input:file').on('change', function( event ) {
 		event.preventDefault();
 		var file = $(event.target)[0].files[0];
-		console.log(file);
 		if (file.name != "") {
 			var data = new FormData();
 			data.append("usage", $(event.target).attr('id'));
