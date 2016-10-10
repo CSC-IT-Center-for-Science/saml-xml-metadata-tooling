@@ -2,12 +2,18 @@ package fi.csc.virtu.samlxmltooling.xmldiffer;
 
 public class SamlEndpoint  {
 	
+	public enum SamlEndpointType {
+		ACS, SSS, SLS
+	}
+	
 	private String location;
 	private String binding;
+	private SamlEndpointType myType;
 	
-	public SamlEndpoint (String location, String binding) {
+	public SamlEndpoint (String location, String binding, SamlEndpointType type) {
 		this.location = location;
 		this.binding = binding;
+		this.myType = type;
 	}
 
 	public String getLocation() {
@@ -15,6 +21,9 @@ public class SamlEndpoint  {
 	}
 	public String getBinding() {
 		return binding;
+	}
+	public SamlEndpointType getType() {
+		return myType;
 	}
 	
 	@Override
@@ -33,7 +42,9 @@ public class SamlEndpoint  {
 	
 	@Override
 	public String toString() {
-		return this.getBinding() + " | " + this.getLocation() + "\n";
+		return this.getType().toString() + " | "
+				+ this.getBinding() + " | "
+				+ this.getLocation() + "\n";
 	}
 	
 	

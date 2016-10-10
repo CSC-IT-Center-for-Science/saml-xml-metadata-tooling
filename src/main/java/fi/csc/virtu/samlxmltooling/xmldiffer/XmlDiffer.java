@@ -20,6 +20,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
 import fi.csc.virtu.samlxmltooling.xmldiffer.DiffObj.ChangeType;
+import fi.csc.virtu.samlxmltooling.xmldiffer.SamlEndpoint.SamlEndpointType;
 
 public class XmlDiffer {
 	
@@ -184,24 +185,35 @@ public class XmlDiffer {
 		List<SamlEndpoint> epList = new ArrayList<SamlEndpoint>();
 		if (spFound(doc)) {
 			NodeList nl = doc.getElementsByTagName("AssertionConsumerService");
-			epList.addAll(getEpList(nl));
+			fillEpList(epList, nl, SamlEndpointType.ACS);
+			addSloEndpoints(epList, doc, nl);
 		}
 		if (idpFound(doc)) {
 			NodeList nl = doc.getElementsByTagName("SingleSignOnService");
-			epList.addAll(getEpList(nl));
+			fillEpList(epList, nl, SamlEndpointType.SSS);
+			addSloEndpoints(epList, doc, nl);
 		}
 		return epList;
 	}
 	
-	private static List<SamlEndpoint> getEpList (NodeList nl) {
-		List<SamlEndpoint> epList = new ArrayList<SamlEndpoint>();
+	private static void addSloEndpoints (List<SamlEndpoint> epList,
+			Document doc, 
+			NodeList nl) {
+		final String SLO_STR = "SingleLogoutService";
+		nl = doc.getElementsByTagName(SLO_STR);
+		fillEpList(epList, nl, SamlEndpointType.SLS);
+	}
+	
+	private static void fillEpList (List<SamlEndpoint> epList,
+			NodeList nl, 
+			SamlEndpointType type) {
 		for (int t = 0, l = nl.getLength(); t < l; t++) {
 			NamedNodeMap ml = nl.item(t).getAttributes();
 			SamlEndpoint el = new SamlEndpoint(ml.getNamedItem("Location").getNodeValue(), 
-					ml.getNamedItem("Binding").getNodeValue());
+					ml.getNamedItem("Binding").getNodeValue(),
+					type);
 			epList.add(el);
 		}
-		return epList;
 	}
 	
 	private static boolean spFound(Document doc) {
