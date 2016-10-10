@@ -48,6 +48,10 @@ public class Task {
 		return this.myStatus;
 	}
 	
+	public TaskFlavor getFlavor() {
+		return myFlavor;
+	}
+	
 	public long idleSeconds() {
 		return (new Date().getTime() - latestAccess.getTime()) / 1000;
 	}

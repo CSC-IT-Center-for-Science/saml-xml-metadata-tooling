@@ -28,9 +28,9 @@ public final class Configuration {
 		final String flavorPar = FLAVOR_PARAMETER;
 		if (req.getParameter(flavorPar) != null) {
 			switch (req.getParameter(flavorPar)) {
-				case "virtu":
+				case "VIRTU":
 					return TaskFlavor.VIRTU;
-				case "haka":
+				case "HAKA":
 					return TaskFlavor.HAKA;
 				default:
 					return DEFAULT_FLAVOR;

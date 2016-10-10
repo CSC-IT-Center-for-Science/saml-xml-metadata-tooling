@@ -2,7 +2,6 @@ package fi.csc.virtu.samlxmltooling.diffservlet;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -17,24 +17,34 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import com.github.vbauer.herald.annotation.Log;
 
 import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
 
 @RestController
 public class diffController {
+	
+	private final static String ERROR_STR = "error";
+	private final static String OK_STR = "ok";
+	private final static String STATUS_STR ="status";
+	private final static String USAGE_PARAM_STR = "usage";
+	private final static String FILE_PARAM_STR = "file";
 
 	private Map<String, Task> taskList = new HashMap<String, Task>();
 	private Timer cleaner = new Timer();
+	
+	@Log
+	private Logger log;
 	
 
 	@RequestMapping (path = "/ctrl/",
@@ -89,74 +99,72 @@ public class diffController {
 		retMap.put("taskStatus", task.getStatus().toString());
 		retMap.put("task", task.getUuid());
 		retMap.put("taskListLength", String.valueOf(taskList.size()));
+		retMap.put("flavor", task.getFlavor().toString());
+		
+		return retMap;
+	}
+	
+	@PostMapping(path="/fileUpload")
+	public Map<String, String> postFileController (HttpServletRequest req,
+			@RequestParam(name=FILE_PARAM_STR, required=true) MultipartFile file,
+			@RequestParam(name=USAGE_PARAM_STR, required=true) String usage) {
+		
+		String sessId = req.getSession().getId();
+		Map<String, String> retMap = new HashMap<String, String>();
+
+		DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder;
+		try {
+			builder = fac.newDocumentBuilder();
+			Document doc = builder.parse(file.getInputStream());
+			switch (usage) {
+			case "compFile":
+				getTask(sessId).setComp(doc);
+				retMap.put(STATUS_STR, OK_STR);
+				break;
+			case "baseFile":
+				getTask(sessId).setBase(doc);
+				retMap.put(STATUS_STR, OK_STR);
+				break;
+			}
+		} catch (ParserConfigurationException | SAXException | IOException e) {
+			e.printStackTrace();
+			retMap.put(STATUS_STR, ERROR_STR);
+			retMap.put(ERROR_STR, e.getMessage());
+		}
+
 		
 		return retMap;
 	}
 	
 	
-	@RequestMapping (path = "/ctrl/", method = RequestMethod.POST)
+	@PostMapping (path = "/xmlUpload")
 	public Map<String, String> postController (HttpServletRequest req) {
 		Map<String, String> retMap = new HashMap<String, String>();
-
-		String str = req.getParameter("sessionStr");
-		if (str != null) {
-			req.getSession().setAttribute("sessionStr", str);
-			retMap.put("status", "ok");
-		}
-		
+	
 		String sessId = req.getSession().getId();
-		if (ServletFileUpload.isMultipartContent(req)) {
-			ServletFileUpload fu = new ServletFileUpload(new DiskFileItemFactory());
-			List<?> files;
-			try {
-				files = fu.parseRequest(req);
-				String name = ((FileItem) files.get(0)).getFieldName();
-				FileItem item = (FileItem) files.get(0);
-				DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
-				DocumentBuilder builder = fac.newDocumentBuilder();
-				Document doc = builder.parse(item.getInputStream());
-				switch (name) {
-				case "compFile":
-					getTask(sessId).setComp(doc);
-					retMap.put("status", "ok");
-					break;
-				case "baseFile":
-					getTask(sessId).setBase(doc);
-					retMap.put("status", "ok");
-					break;
-				}
-			} catch (FileUploadException | ParserConfigurationException | SAXException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				retMap.put("status", "error");
-			}
-		} else if (req.getContentType().matches("application/xml.*")) {
+		if (req.getContentType().matches("application/xml.*")) {
 			try {
 				InputStream is = req.getInputStream();
 				DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
 				DocumentBuilder builder;
-				try {
-					builder = fac.newDocumentBuilder();
-					Document doc = builder.parse(is);
-					getTask(sessId).setComp(doc);
-					retMap.put("status", "ok");
-				} catch (ParserConfigurationException | SAXException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					retMap.put("status", "error");
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				builder = fac.newDocumentBuilder();
+				Document doc = builder.parse(is);
+				getTask(sessId).setComp(doc);
+				retMap.put(STATUS_STR, OK_STR);
+			} catch (IOException | ParserConfigurationException | SAXException e) {
 				e.printStackTrace();
+				retMap.put(STATUS_STR, ERROR_STR);
+				retMap.put(ERROR_STR, e.getMessage());
 			}
 		} else {
-			System.out.println(req.getContentType());
+			retMap.put(STATUS_STR, ERROR_STR);
+			retMap.put(ERROR_STR, "wrong content type");
 		}
 		
 		if (retMap.isEmpty()) {
-			retMap.put("status", "nothing to do");
+			retMap.put(STATUS_STR, "nothing to do");
 		}
-		
 		
 		return retMap;
 	}

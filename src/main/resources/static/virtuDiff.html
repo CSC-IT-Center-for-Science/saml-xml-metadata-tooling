@@ -88,7 +88,7 @@
 	
 	function uploadFile( fileUp ) {
 	    $.ajax({
-	        url: 'ctrl/',
+	        url: 'xmlUpload',
 	        type: 'POST',
 	        data: fileUp,
 	        cache: false,
@@ -156,10 +156,10 @@
 	}
 	
 	$( document ).ready(function() {
-		$.get( 'ctrl/?op=getTaskStatus&flavor=virtu', function ( data ) {
+		$.get( 'ctrl/?op=getTaskStatus&flavor=VIRTU', function ( data ) {
 			updateTask( data );
 			if (data.taskStatus != "initiated") {
-				$.get( 'ctrl/?op=reqTask&flavor=virtu', function ( data ) {
+				$.get( 'ctrl/?op=reqTask&flavor=VIRTU', function ( data ) {
 					updateTask ( data );
 				});				
 			}
