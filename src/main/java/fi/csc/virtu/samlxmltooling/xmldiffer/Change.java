@@ -60,6 +60,14 @@ public class Change {
 		out.append(
 				appendChange(DiffObj.ChangeType.remove,
 						SamlEndpoint.class));
+		out.append("\n* New dsUrls:\n");
+		out.append(
+				appendChange(DiffObj.ChangeType.add,
+						DiscoveryEndpoint.class));
+		out.append("\n* Retired dsUrls:\n");
+		out.append(
+				appendChange(DiffObj.ChangeType.remove,
+						DiscoveryEndpoint.class));
 		return out.toString();
 	}
 	

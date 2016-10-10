@@ -24,6 +24,9 @@ import fi.csc.virtu.samlxmltooling.xmldiffer.SamlEndpoint.SamlEndpointType;
 
 public class XmlDiffer {
 	
+	private final static String LOC_STR = "Location";
+	//private static Logger logger = Logger.getLogger(XmlDiffer.class.getName());
+	
 	private static DocumentBuilderFactory dbFactory =
 			DocumentBuilderFactory.newInstance();
 	private static DocumentBuilder dBuilder;
@@ -65,6 +68,9 @@ public class XmlDiffer {
 								entity, baseEntDoc, compEntDoc));
 				change.addAllChanges(
 						changedEndPoints(
+								entity, baseEntDoc, compEntDoc));
+				change.addAllChanges(
+						changedDiscoveryEndpoints(
 								entity, baseEntDoc, compEntDoc));
 				change.addAllChanges(
 						changedAttributeRequests(
@@ -174,11 +180,7 @@ public class XmlDiffer {
 	
 	private static boolean endpointFound(Document compEntDoc, SamlEndpoint ep) {
 		List<SamlEndpoint> epList = getEpList(compEntDoc);
-		if (epList.contains(ep)) {
-			return true;
-		} else {
-			return false;
-		}
+		return epList.contains(ep) ? true : false;
 	}
 	
 	private static List<SamlEndpoint> getEpList (Document doc) {
@@ -209,7 +211,7 @@ public class XmlDiffer {
 			SamlEndpointType type) {
 		for (int t = 0, l = nl.getLength(); t < l; t++) {
 			NamedNodeMap ml = nl.item(t).getAttributes();
-			SamlEndpoint el = new SamlEndpoint(ml.getNamedItem("Location").getNodeValue(), 
+			SamlEndpoint el = new SamlEndpoint(ml.getNamedItem(LOC_STR).getNodeValue(), 
 					ml.getNamedItem("Binding").getNodeValue(),
 					type);
 			epList.add(el);
@@ -223,6 +225,54 @@ public class XmlDiffer {
 	private static boolean idpFound(Document doc) {
 		return doc.getElementsByTagName("IDPSSODescriptor").getLength() > 0;
 	}
+	
+	private static List<DiffObj> changedDiscoveryEndpoints (String entity, Document baseEntDoc, Document compEntDoc) {
+		List<DiffObj> diffList = new ArrayList<DiffObj>();
+		List<DiscoveryEndpoint> epList = getDsEpList(baseEntDoc);
+		
+		Iterator<DiscoveryEndpoint> i = epList.iterator();
+		while (i.hasNext()) {
+			DiscoveryEndpoint ep = i.next();
+			if (!endPointFound(compEntDoc, ep)) {
+				diffList.add(new DiffObj(entity, ChangeType.remove, ep));
+			}
+		}
+		
+		epList = getDsEpList(compEntDoc);
+		i = epList.iterator();
+		while (i.hasNext()) {
+			DiscoveryEndpoint ep = i.next();
+			if (!endPointFound(baseEntDoc, ep)) {
+				diffList.add(new DiffObj(entity, ChangeType.add, ep));
+			}
+		}
+		
+		//logger.info("ds difflist length: " + diffList.size());
+		return diffList;
+	}
+	
+	private static boolean endPointFound(Document compEntDox, DiscoveryEndpoint ep) {
+		List<DiscoveryEndpoint> epList = getDsEpList(compEntDox);
+		return epList.contains(ep) ? true : false;
+	}
+	
+	private static List<DiscoveryEndpoint> getDsEpList(Document doc) {
+		List<DiscoveryEndpoint> epList = new ArrayList<DiscoveryEndpoint>();
+		if (spFound(doc)) {
+			NodeList nl = doc.getElementsByTagName("idpdisc:DiscoveryResponse");
+			//logger.info("dsElements #: " + nl.getLength());
+			for (int t = 0, l = nl.getLength(); t < l; t++) {
+				NamedNodeMap ml = nl.item(t).getAttributes();
+				final DiscoveryEndpoint ep = new DiscoveryEndpoint(
+						ml.getNamedItem(LOC_STR).getNodeValue()
+						);
+				//logger.info("adding ep: " + ep.getLocation());
+				epList.add(ep);
+			}
+		}
+		return epList;
+	}
+	
 	
 	private static List<DiffObj> changedAttributeRequests (String entity, Document baseEntDoc, Document compEntDoc) {
 		List<DiffObj> diffList = new ArrayList<DiffObj>();
