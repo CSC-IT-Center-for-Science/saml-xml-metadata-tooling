@@ -3,7 +3,7 @@
 This project aims to create a set of tools for SAML metadata handling. First aim
 is to define microservices to validate the metadata, notify changes and aid in
 publishing the metadata to publication platforms. The source for the metadata
-is operators current tools to generate metadata files.
+is operator's current tools to generate metadata files.
 
 Work it is specifically aimed to serve
 [Virtu](https://wiki.eduuni.fi/display/CSCVIRTU/Virtu) and
