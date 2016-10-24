@@ -34,6 +34,11 @@
              <id>jitpack.io</id>
              <url>https://jitpack.io</url>
          </repository>
+         
+         <repository>
+         	<id>Shibboleth</id>
+         	<url>https://build.shibboleth.net/nexus/content/repositories/releases/</url>
+         </repository>
 
     </repositories>
 	
@@ -86,6 +91,12 @@
           <artifactId>herald</artifactId>
           <version>1.2.3</version>
         </dependency>
+        
+		<dependency>
+		    <groupId>net.shibboleth.tool</groupId>
+		    <artifactId>xmlsectool</artifactId>
+		    <version>2.0.0</version>
+		</dependency>
 
 	</dependencies>
 

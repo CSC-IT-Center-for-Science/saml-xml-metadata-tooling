@@ -1,17 +1,14 @@
 package fi.csc.virtu.samlxmltooling.diffservlet;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Date;
 import java.util.UUID;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 import fi.csc.virtu.samlxmltooling.xmldiffer.Change;
 import fi.csc.virtu.samlxmltooling.xmldiffer.XmlDiffer;
 
@@ -94,24 +91,7 @@ public class Task {
 		touch();
 		try {
 			this.myStatus = status.fetchingCurrent;
-			URL url;
-			switch (myFlavor) {
-				case HAKA:
-					url = new URL(Configuration.getCurrentUrlHaka());
-					break;
-				case VIRTU:
-					url = new URL(Configuration.getCurrentUrlVirtu());
-					break;
-				default:
-					url = new URL(Configuration.getCurrentUrlHaka());
-					break;
-			}
-			URLConnection conn = url.openConnection(); 
-			DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder;
-			builder = fac.newDocumentBuilder();
-			Document doc = builder.parse(conn.getInputStream());
-			this.base = doc;
+			this.base = SamlDocBuilder.getCurrent(myFlavor);
 			this.myStatus = status.currentFetched; 
 			return true;
 		} catch (IOException | ParserConfigurationException | SAXException e) {

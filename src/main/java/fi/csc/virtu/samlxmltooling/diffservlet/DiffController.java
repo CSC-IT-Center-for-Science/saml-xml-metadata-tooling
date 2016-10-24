@@ -32,11 +32,11 @@ import com.github.vbauer.herald.annotation.Log;
 import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
 
 @RestController
-public class diffController {
+public class DiffController {
 	
-	private final static String ERROR_STR = "error";
-	private final static String OK_STR = "ok";
-	private final static String STATUS_STR ="status";
+	public final static String ERROR_STR = "error";
+	public final static String OK_STR = "ok";
+	public final static String STATUS_STR ="status";
 	private final static String USAGE_PARAM_STR = "usage";
 	private final static String FILE_PARAM_STR = "file";
 
