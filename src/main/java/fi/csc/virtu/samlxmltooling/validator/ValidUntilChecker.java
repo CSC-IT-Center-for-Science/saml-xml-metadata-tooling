@@ -1,13 +1,17 @@
 package fi.csc.virtu.samlxmltooling.validator;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
-import java.util.Date;
 
 import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+
+import fi.csc.virtu.samlxmltooling.tools.GeneralStrings;
 
 public class ValidUntilChecker {
 	
@@ -21,26 +25,19 @@ public class ValidUntilChecker {
 				.getAttributes().getNamedItem(GeneralStrings.SAML_MD_ATTR_VALIDUNTIL)
 				.getTextContent();
 		Calendar validUntilCal = DatatypeConverter.parseDateTime(validUntilStr);
-		long deltaMillis = (validUntilCal.getTimeInMillis() - new Date().getTime());
-		long millisInDay = 86400 * 1000;
-		long minMillis = minDays * millisInDay;
-		long maxMillis = maxDays * millisInDay;
-		long deltaInDays = deltaMillis / millisInDay;
-		//log.debug("--- validUntil: " + validUntilStr);
-		//log.debug("--- validuMillis:" + validUntilCal.getTimeInMillis());
-		//log.debug("--- deltaMillis: " + deltaMillis);
-		log.debug("-- deltaDays: "+ deltaInDays);
-		//log.debug("--- minMillis  : " + minMillis);
-		//log.debug("--- maxMillis  : " + maxMillis);
-		//log.debug("--- nowMillis  : " + new Date().getTime());
-		if (deltaMillis < minMillis ||
-				deltaMillis > maxMillis) {
-			log.debug("-- validUntil not in range: " + minDays + " < " + deltaInDays + " > " + maxDays);
-			return false;
-		} else {
+		LocalDate validUntilLocal = validUntilCal.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		
+		long deltaDays = ChronoUnit.DAYS.between(LocalDate.now(), validUntilLocal);
+		
+		if (deltaDays > minDays &&
+				deltaDays < maxDays ) {
 			log.debug("-- validUntil ok");
 			return true;
+		} else {
+			log.debug("-- validUntil not in range: " + minDays + " < " + deltaDays + " > " + maxDays);
+			return false;
 		}
+		
 	}
 
 }
