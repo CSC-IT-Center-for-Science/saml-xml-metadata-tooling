@@ -1,7 +1,7 @@
 package fi.csc.virtu.samlxmltooling.validator;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.security.Key;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
@@ -31,6 +31,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import fi.csc.virtu.samlxmltooling.diffservlet.DiffController;
+import fi.csc.virtu.samlxmltooling.tools.GeneralStrings;
 import net.shibboleth.tool.xmlsectool.InitializationSupport;
 import net.shibboleth.tool.xmlsectool.ReturnCode;
 import net.shibboleth.tool.xmlsectool.Terminator;
@@ -107,7 +108,7 @@ public class SigChecker {
                 putErrors(retMap, message);
                 return;
             }
-        } catch (final XMLSignatureException | CertificateException | FileNotFoundException e) {
+        } catch (final XMLSignatureException | CertificateException | IOException e) {
             log.error("XML document signature verification failed with an error", e);
             putErrors(retMap, e);
             return;
@@ -115,11 +116,12 @@ public class SigChecker {
 
 	}
 	
-	private static PublicKey getPublicKey (String filename) throws CertificateException, FileNotFoundException  {
+	private static PublicKey getPublicKey (String filename) throws CertificateException, IOException  {
 		
-		CertificateFactory certFact = CertificateFactory.getInstance("X.509");
+		CertificateFactory certFact = CertificateFactory.getInstance(GeneralStrings.X509);
 		FileInputStream is = new FileInputStream(filename);
 		X509Certificate cert = (X509Certificate) certFact.generateCertificate(is);
+		is.close();
 		
 		return cert.getPublicKey();
 	}

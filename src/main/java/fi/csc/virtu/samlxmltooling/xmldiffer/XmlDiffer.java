@@ -1,11 +1,6 @@
 package fi.csc.virtu.samlxmltooling.xmldiffer;
 
-import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -13,12 +8,12 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.codec.binary.Base64;
 import org.custommonkey.xmlunit.Diff;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
+import fi.csc.virtu.samlxmltooling.tools.CertTool;
 import fi.csc.virtu.samlxmltooling.xmldiffer.DiffObj.ChangeType;
 import fi.csc.virtu.samlxmltooling.xmldiffer.SamlEndpoint.SamlEndpointType;
 
@@ -113,14 +108,18 @@ public class XmlDiffer {
 		for (int t = 0, l = nl.getLength(); t < l; t++) {
 			certStr = nl.item(t).getTextContent();
 			if (!certFound(compEntDoc, certStr)) {
-				diffList.add(new DiffObj(entity, ChangeType.remove, getCert(certStr)));
+				diffList.add(new DiffObj(entity, ChangeType.remove, 
+						CertTool.getCertFromStr(certStr)
+						));
 			}
 		}
 		nl = compEntDoc.getElementsByTagName("ds:X509Certificate");
 		for (int t = 0, l = nl.getLength(); t < l; t++) {
 			certStr = nl.item(t).getTextContent();
 			if (!certFound(baseEntDoc, certStr)) {
-				diffList.add(new DiffObj(entity, ChangeType.add, getCert(certStr)));
+				diffList.add(new DiffObj(entity, ChangeType.add, 
+						CertTool.getCertFromStr(certStr)
+						));
 			}
 		}
 		return diffList;
@@ -130,16 +129,14 @@ public class XmlDiffer {
 		NodeList nl = doc.getElementsByTagName("ds:X509Certificate");
 		for (int t = 0, length = nl.getLength(); t < length; t++) {
 			String nodeCertStr = nl.item(t).getTextContent();
-			if (Arrays.equals(
-					getByteArray(certStr),
-					getByteArray(nodeCertStr))) {
+			if (CertTool.certsEqual(certStr, nodeCertStr)) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	private static byte[] getByteArray(String certStr) {
+	/*private static byte[] getByteArray(String certStr) {
 		return Base64.decodeBase64(certStr);
 	}
 
@@ -153,7 +150,7 @@ public class XmlDiffer {
 			e.printStackTrace();
 			return null;
 		}
-	}
+	}*/
 
 	private static List<DiffObj> changedEndPoints (String entity, Document baseEntDoc, Document compEntDoc) {
 		List<DiffObj> diffList = new ArrayList<DiffObj>();
