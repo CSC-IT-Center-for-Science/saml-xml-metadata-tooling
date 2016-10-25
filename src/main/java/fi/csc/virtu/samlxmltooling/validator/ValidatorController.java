@@ -32,7 +32,7 @@ public class ValidatorController {
 	Logger log;
 	
 	public enum ops {
-		validateCurrent, checkSignCurrent
+		validateCurrent, checkSignCurrent, checkValidUntil
 	}
 
 	@GetMapping("ctrl")
@@ -55,6 +55,9 @@ public class ValidatorController {
 			break;
 		case checkSignCurrent:
 			SigChecker.checkSig(retMap, doc, filename);
+			break;
+		case checkValidUntil:
+			ValidUntilChecker.checkRange(doc, 27, 32);
 			break;
 		}
 		
