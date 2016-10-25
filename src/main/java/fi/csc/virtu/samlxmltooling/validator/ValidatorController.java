@@ -1,10 +1,12 @@
 package fi.csc.virtu.samlxmltooling.validator;
 
 import java.io.IOException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -19,6 +21,7 @@ import com.github.vbauer.herald.annotation.Log;
 
 import fi.csc.virtu.samlxmltooling.diffservlet.DiffController;
 import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
+import fi.csc.virtu.samlxmltooling.tools.CertTool;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 
 @Controller
@@ -32,7 +35,8 @@ public class ValidatorController {
 	Logger log;
 	
 	public enum ops {
-		validateCurrent, checkSignCurrent, checkValidUntil
+		validateCurrent, checkSignCurrent, checkValidUntil, checkCertsEqual,
+		checkCertValidity
 	}
 
 	@GetMapping("ctrl")
@@ -57,7 +61,30 @@ public class ValidatorController {
 			SigChecker.checkSig(retMap, doc, filename);
 			break;
 		case checkValidUntil:
-			ValidUntilChecker.checkRange(doc, 27, 32);
+			putStatus(retMap, ValidUntilChecker.checkRange(doc, 27, 32));
+			break;
+		case checkCertsEqual:
+			try {
+				putStatus(retMap, CertChecker.certsEqual(doc, filename));
+			} catch (CertificateException | XPathExpressionException | IOException e) {
+				putErrors(retMap, e);
+				e.printStackTrace();
+				return retMap;
+			}
+			break;
+		case checkCertValidity:
+			try {
+				if (CertChecker.certValidityInRange(
+						CertTool.getCertFromDoc(doc), 30, 735)) {
+					retMap.put(DiffController.STATUS_STR, DiffController.OK_STR);
+				} else {
+					retMap.put(DiffController.STATUS_STR, DiffController.ERROR_STR);
+				}
+			} catch (XPathExpressionException e) {
+				putErrors(retMap, e);
+				e.printStackTrace();
+				return retMap;
+			}
 			break;
 		}
 		
@@ -68,6 +95,15 @@ public class ValidatorController {
 		
 		log.debug("-- ctrl returning");
 		return retMap;
+	}
+	
+	private static void putStatus(Map<String, String> retMap, boolean status) {
+		if (status) {
+			retMap.put(DiffController.STATUS_STR, DiffController.OK_STR);
+		} else {
+			retMap.put(DiffController.STATUS_STR, DiffController.ERROR_STR);
+		}
+		
 	}
 	
 	private static void putErrors (Map<String, String> retMap, Exception e) {
