@@ -22,7 +22,7 @@ public class ValidatorController {
 	Logger log;
 	
 	public enum ops {
-		validateCurrent
+		validateCurrent, checkSignCurrent
 	}
 
 	@GetMapping("ctrl")
@@ -33,6 +33,9 @@ public class ValidatorController {
 		switch (ops.valueOf(op)) {
 		case validateCurrent: 
 			SchemaValidatorTool.validate(retMap);
+			break;
+		case checkSignCurrent:
+			SigChecker.checkSig(retMap);
 			break;
 		}
 		
