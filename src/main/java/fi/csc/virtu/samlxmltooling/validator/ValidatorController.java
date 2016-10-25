@@ -74,12 +74,8 @@ public class ValidatorController {
 			break;
 		case checkCertValidity:
 			try {
-				if (CertChecker.certValidityInRange(
-						CertTool.getCertFromDoc(doc), 30, 735)) {
-					retMap.put(DiffController.STATUS_STR, DiffController.OK_STR);
-				} else {
-					retMap.put(DiffController.STATUS_STR, DiffController.ERROR_STR);
-				}
+				putStatus(retMap, CertChecker.certValidityInRange(
+						CertTool.getCertFromDoc(doc), 30, 735));
 			} catch (XPathExpressionException e) {
 				putErrors(retMap, e);
 				e.printStackTrace();
