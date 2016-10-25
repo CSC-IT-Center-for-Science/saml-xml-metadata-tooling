@@ -2,7 +2,6 @@ package fi.csc.virtu.samlxmltooling.validator;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.security.Key;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
@@ -10,8 +9,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.xml.security.exceptions.XMLSecurityException;
@@ -32,43 +29,31 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 import fi.csc.virtu.samlxmltooling.diffservlet.DiffController;
-import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
-import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 import net.shibboleth.tool.xmlsectool.InitializationSupport;
 import net.shibboleth.tool.xmlsectool.ReturnCode;
 import net.shibboleth.tool.xmlsectool.Terminator;
 import net.shibboleth.utilities.java.support.xml.AttributeSupport;
 import net.shibboleth.utilities.java.support.xml.ElementSupport;
-import net.shibboleth.utilities.java.support.xml.SerializeSupport;
 
 public class SigChecker {
 	
 	final static Logger log  = LoggerFactory.getLogger(SigChecker.class);
-	final static String filename = "/Users/klaalo/Virtu/virtu-metadata-signing-crt-2015.pem";
 	
-	public static void checkSig (Map<String, String> retMap) {
+	public static void checkSig (Map<String, String> retMap,
+			Document doc,
+			String filename) {
 
         try {
             InitializationSupport.initialize();
         } catch (final InitializationException e) {
             log.error("Unable to initialize OpenSAML library", e);
-            throw new Terminator(ReturnCode.RC_INIT);
+            putErrors(retMap, e);
+            return;
         }
 		
-		Document doc;
-		log.debug("-- getting document");
-		try {
-			doc = SamlDocBuilder.getCurrent(TaskFlavor.VIRTU);
-		} catch (IOException | ParserConfigurationException | SAXException e) {
-			putErrors(retMap, e);
-			return;
-		}
-		
 		log.debug("-- start checking signature");
-		
         final Element signatureElement = getSignatureElement(doc);
         if (signatureElement == null) {
         	final String message = "Signature required but XML document is not signed"; 
@@ -77,7 +62,7 @@ public class SigChecker {
             return;
             
         }
-        log.debug("XML document contained Signature element\n{}", SerializeSupport.prettyPrintXML(signatureElement));
+        //log.debug("XML document contained Signature element\n{}", SerializeSupport.prettyPrintXML(signatureElement));
 
         log.debug("Creating XML security library XMLSignature object");
         final XMLSignature signature;
@@ -113,7 +98,7 @@ public class SigChecker {
                  * this point, we can't use one from before the signature validation.
                  */
                 validateSignatureReference(doc, extractReference(signature));
-                log.info("XML document signature verified.");
+                log.debug("XML document signature verified.");
                 retMap.put(DiffController.STATUS_STR, DiffController.OK_STR);
                 return;
             } else {

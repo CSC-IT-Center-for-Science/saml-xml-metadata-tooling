@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 
 import org.apache.log4j.Logger;
@@ -12,8 +11,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import fi.csc.virtu.samlxmltooling.diffservlet.DiffController;
-import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
-import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 import net.shibboleth.tool.xmlsectool.SchemaValidator;
 import net.shibboleth.utilities.java.support.xml.SchemaBuilder.SchemaLanguage;
 
@@ -21,16 +18,9 @@ public class SchemaValidatorTool {
 
 	final static Logger log  = Logger.getLogger(SchemaValidatorTool.class);
 	
-	public static void validate (Map<String, String> retMap) {
-		Document doc;
-		log.debug("-- getting document");
-		try {
-			doc = SamlDocBuilder.getCurrent(TaskFlavor.VIRTU);
-		} catch (IOException | ParserConfigurationException | SAXException e) {
-			putErrors(retMap, e);
-			return;
-		}
-		
+	public static void validate (Map<String, String> retMap,
+			Document doc) {
+
 		log.debug("-- getting validator");
 		final SchemaValidator validator;
 		try {
