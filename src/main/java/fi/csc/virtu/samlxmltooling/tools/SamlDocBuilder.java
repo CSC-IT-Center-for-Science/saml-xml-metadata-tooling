@@ -8,26 +8,30 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import fi.csc.virtu.samlxmltooling.diffservlet.Configuration;
+import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
 import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
 
 public class SamlDocBuilder {
 	
-	public static Document getCurrent (TaskFlavor flavor) throws IOException, 
+	@Autowired
+	MainConfiguration conf;
+	
+	public Document getCurrent (TaskFlavor flavor) throws IOException, 
 		ParserConfigurationException, SAXException {
 		URL url;
 		switch (flavor) {
 			case HAKA:
-				url = new URL(Configuration.getCurrentUrlHaka());
+				url = new URL(conf.getCurrentUrlHaka());
 				break;
 			case VIRTU:
-				url = new URL(Configuration.getCurrentUrlVirtu());
+				url = new URL(conf.getCurrentUrlVirtu());
 				break;
 			default:
-				url = new URL(Configuration.getCurrentUrlHaka());
+				url = new URL(conf.getCurrentUrlHaka());
 				break;
 		}
 		URLConnection conn = url.openConnection(); 

@@ -9,6 +9,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +35,9 @@ public class ValidatorController {
 	@Log
 	Logger log;
 	
+	@Autowired
+	SamlDocBuilder docBuilder;
+	
 	public enum ops {
 		checkSchemaCurrent, checkSignCurrent, checkValidUntilCurrent, checkCertsEqualCurrent,
 		checkCertValidityCurrent
@@ -47,7 +51,7 @@ public class ValidatorController {
 		Document doc;
 		log.debug("-- getting document");
 		try {
-			doc = SamlDocBuilder.getCurrent(TaskFlavor.VIRTU);
+			doc = docBuilder.getCurrent(TaskFlavor.VIRTU);
 		} catch (IOException | ParserConfigurationException | SAXException e) {
 			putErrors(retMap, e);
 			return retMap;

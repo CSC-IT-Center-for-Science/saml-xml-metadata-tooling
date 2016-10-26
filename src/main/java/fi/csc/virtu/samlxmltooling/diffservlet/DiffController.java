@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -30,6 +31,7 @@ import org.xml.sax.SAXException;
 import com.github.vbauer.herald.annotation.Log;
 
 import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
+import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 
 @RestController
 public class DiffController {
@@ -46,14 +48,19 @@ public class DiffController {
 	@Log
 	private Logger log;
 	
-
+	@Autowired
+	MainConfiguration conf;
+	
+	@Autowired
+	SamlDocBuilder docBuilder;
+	
 	@RequestMapping (path = "/ctrl/",
 			method = RequestMethod.GET,
 			params = "op=getChange")
 	@ResponseBody
 	public String getChangeController (HttpServletRequest req) {
 		String sessId = req.getSession().getId();
-		TaskFlavor flavor = Configuration.findFlavorFromRequest(req); 
+		TaskFlavor flavor = conf.findFlavorFromRequest(req); 
 		Task task = getTask(sessId, flavor);
 		return task.getChangeString();
 	}
@@ -66,7 +73,7 @@ public class DiffController {
 		String sessStr = (String) req.getSession().getAttribute("sessionStr");
 		String sessId = req.getSession().getId();
 		String op = req.getParameter("op");
-		TaskFlavor flavor = Configuration.findFlavorFromRequest(req); 
+		TaskFlavor flavor = conf.findFlavorFromRequest(req); 
 		Task task = getTask(sessId, flavor);
 		retMap.put("taskIdle", String.valueOf(task.idleSeconds()));
 		if (op != null) {
@@ -90,7 +97,7 @@ public class DiffController {
 					break;
 				case "reqTask":
 					task = getNewTask(sessId, 
-							Configuration.findFlavorFromRequest(req)); 
+							conf.findFlavorFromRequest(req)); 
 					retMap.put("opStat", "newTask");
 					break;
 			}
@@ -171,7 +178,7 @@ public class DiffController {
 	
 	
 	private Task getTask(String sessId) {
-		return getTask(sessId, Configuration.DEFAULT_FLAVOR);
+		return getTask(sessId, conf.DEFAULT_FLAVOR);
 	}
 	
 	private Task getTask(String sessId, TaskFlavor flavor) {
@@ -188,9 +195,13 @@ public class DiffController {
 		if (taskList.containsKey(sessId)) {
 			taskList.remove(sessId);
 		} 
-		Task task = new Task(flavor);
+		Task task = taskFactory(flavor);
 		taskList.put(sessId, task);
 		return task;
+	}
+	
+	private Task taskFactory(TaskFlavor flavor) {
+		return new Task(flavor, docBuilder);
 	}
 
 	

@@ -15,6 +15,8 @@ import fi.csc.virtu.samlxmltooling.xmldiffer.XmlDiffer;
 
 public class Task {
 	
+	SamlDocBuilder docBuilder;
+	
 	public static enum TaskFlavor {
 		VIRTU, HAKA
 	}
@@ -32,8 +34,9 @@ public class Task {
 	private Change change;
 	private Date latestAccess = new Date();
 	
-	public Task (TaskFlavor myFlavorArg) {
+	public Task (TaskFlavor myFlavorArg, SamlDocBuilder docBuilder) {
 		this.myFlavor = myFlavorArg;
+		this.docBuilder = docBuilder;
 	}
 	
 	public String getUuid() {
@@ -91,7 +94,7 @@ public class Task {
 		touch();
 		try {
 			this.myStatus = status.fetchingCurrent;
-			this.base = SamlDocBuilder.getCurrent(myFlavor);
+			this.base = docBuilder.getCurrent(myFlavor);
 			this.myStatus = status.currentFetched; 
 			return true;
 		} catch (IOException | ParserConfigurationException | SAXException e) {
