@@ -16,6 +16,7 @@ import org.xml.sax.SAXException;
 import com.github.vbauer.herald.annotation.Log;
 
 import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
+import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
 
 public class SamlDocBuilder {
 	
@@ -30,6 +31,23 @@ public class SamlDocBuilder {
 	ParserConfigurationException, SAXException {
 
 		URL url = new URL(conf.getFedConfStr(flavor, GeneralStrings.PROP_FED_URL));
+		return getDoc(url);
+	}
+	
+	public Document getCurrent (TaskFlavor flavor) throws IOException, 
+	ParserConfigurationException, SAXException {
+		URL url;
+		switch (flavor) {
+			case HAKA:
+				url = new URL(conf.getCurrentUrlHaka());
+				break;
+			case VIRTU:
+				url = new URL(conf.getCurrentUrlVirtu());
+				break;
+			default:
+				url = new URL(conf.getCurrentUrlHaka());
+				break;
+		}
 		return getDoc(url);
 	}
 	
