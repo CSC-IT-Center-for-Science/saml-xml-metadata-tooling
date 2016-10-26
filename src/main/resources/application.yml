@@ -1,0 +1,4 @@
+spring.http.multipart:
+   max-file-size: 3MB
+   max-request-size: 3MB
+logging.level.fi.csc.virtu.samlxmltooling: DEBUG
