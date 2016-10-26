@@ -35,8 +35,8 @@ public class ValidatorController {
 	Logger log;
 	
 	public enum ops {
-		validateCurrent, checkSignCurrent, checkValidUntil, checkCertsEqual,
-		checkCertValidity
+		checkSchemaCurrent, checkSignCurrent, checkValidUntilCurrent, checkCertsEqualCurrent,
+		checkCertValidityCurrent
 	}
 
 	@GetMapping("ctrl")
@@ -54,16 +54,16 @@ public class ValidatorController {
 		}
 		
 		switch (ops.valueOf(op)) {
-		case validateCurrent: 
+		case checkSchemaCurrent: 
 			SchemaValidatorTool.validate(retMap, doc);
 			break;
 		case checkSignCurrent:
 			SigChecker.checkSig(retMap, doc, filename);
 			break;
-		case checkValidUntil:
+		case checkValidUntilCurrent:
 			putStatus(retMap, ValidUntilChecker.checkRange(doc, 27, 32));
 			break;
-		case checkCertsEqual:
+		case checkCertsEqualCurrent:
 			try {
 				putStatus(retMap, CertChecker.certsEqual(doc, filename));
 			} catch (CertificateException | XPathExpressionException | IOException e) {
@@ -72,7 +72,7 @@ public class ValidatorController {
 				return retMap;
 			}
 			break;
-		case checkCertValidity:
+		case checkCertValidityCurrent:
 			try {
 				putStatus(retMap, CertChecker.certValidityInRange(
 						CertTool.getCertFromDoc(doc), 30, 735));
