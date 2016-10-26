@@ -207,7 +207,7 @@ public class DiffController {
 	
 	private static class TasksCleaner extends TimerTask {
 
-		private Map<String, Task> taskList = new HashMap<String, Task>();
+		private Map<String, Task> taskList;
 		public TasksCleaner(Map<String, Task> taskList) {
 			this.taskList = taskList;
 		}

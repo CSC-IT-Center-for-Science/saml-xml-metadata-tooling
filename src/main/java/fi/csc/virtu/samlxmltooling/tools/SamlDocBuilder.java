@@ -8,32 +8,32 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import com.github.vbauer.herald.annotation.Log;
+
 import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
-import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
 
 public class SamlDocBuilder {
 	
 	@Autowired
 	MainConfiguration conf;
 	
-	public Document getCurrent (TaskFlavor flavor) throws IOException, 
-		ParserConfigurationException, SAXException {
-		URL url;
-		switch (flavor) {
-			case HAKA:
-				url = new URL(conf.getCurrentUrlHaka());
-				break;
-			case VIRTU:
-				url = new URL(conf.getCurrentUrlVirtu());
-				break;
-			default:
-				url = new URL(conf.getCurrentUrlHaka());
-				break;
-		}
+	@Log
+	Logger log;
+	
+	
+	public Document getCurrent(String flavor) throws IOException, 
+	ParserConfigurationException, SAXException {
+
+		URL url = new URL(conf.getFedConfStr(flavor, GeneralStrings.PROP_FED_URL));
+		return getDoc(url);
+	}
+	
+	private Document getDoc (URL url) throws IOException, ParserConfigurationException, SAXException {
 		URLConnection conn = url.openConnection(); 
 		DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
 
@@ -44,6 +44,7 @@ public class SamlDocBuilder {
 		builder = fac.newDocumentBuilder();
 		Document doc = builder.parse(conn.getInputStream());
 		return doc;
+		
 	}
 
 }

@@ -5,6 +5,9 @@ spring.http.multipart:
 logging.level.fi.csc.virtu.samlxmltooling: DEBUG
 
 my.federations:
+   - Virtu
+   - Haka
+my.federationSpecs:
    Virtu:
       mdUrl: "https://virtu-ds.csc.fi/fed/virtu/virtu-metadata-v3.xml"
       mdCertFile: "/Users/klaalo/Virtu/virtu-metadata-signing-crt-2015.pem"

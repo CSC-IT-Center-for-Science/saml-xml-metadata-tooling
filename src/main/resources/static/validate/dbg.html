@@ -45,58 +45,45 @@
 		<h1>Diff debug</h1>
 	</div>
 	<div class="col-sm-12">
-		<table class="table">
-			<tr>
-				<td>Init</td>
-				<td><button class="btn req" 
-						data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-						data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-						data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-						id="reqTaskHaka">checkSchemaCurrent
-					</button>
-				</td>
-			</tr>
-			<tr>
-				<td>Init</td>
-				<td><button class="btn req" 
-						data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-						data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-						data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-						id="reqTaskHaka">checkSignCurrent
-					</button>
-				</td>
-			</tr>
-			<tr>
-				<td>Init</td>
-				<td><button class="btn req" 
-						data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-						data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-						data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-						id="reqTaskHaka">checkValidUntilCurrent
-					</button>
-				</td>
-			</tr>
-			<tr>
-				<td>Init</td>
-				<td><button class="btn req" 
-						data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-						data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-						data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-						id="reqTaskHaka">checkCertsEqualCurrent
-					</button>
-				</td>
-			</tr>
-			<tr>
-				<td>Init</td>
-				<td><button class="btn req" 
-						data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-						data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-						data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-						id="reqTaskHaka">checkCertValidityCurrent
-					</button>
-				</td>
-			</tr>
-		</table>
+		<p>
+		<button class="btn btn-default req" 
+					data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+					data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+					data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+					id="reqTaskHaka">checkSchemaCurrent
+		</button>
+		<button class="btn btn-default req" 
+				data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+				data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+				data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+				id="reqTaskHaka">checkSignCurrent
+		</button>
+		<button class="btn btn-default req" 
+					data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+					data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+					data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+					id="reqTaskHaka">checkValidUntilCurrent
+		</button>
+		<button class="btn btn-default req" 
+					data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+					data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+					data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+					id="reqTaskHaka">checkCertsEqualCurrent
+		</button>
+		<button class="btn btn-default req" 
+					data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+					data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+					data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+					id="reqTaskHaka">checkCertValidityCurrent
+		</button>
+		</p>
+		<button class="btn btn-default req" 
+					data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+					data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+					data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+					id="reqTaskHaka">reqTask
+		</button>
+		<p>
 	</div>
 </div>
 <script type="text/javascript">
@@ -106,13 +93,13 @@ $('.req').on('click', function ( event ) {
 	var btn = $(this);
 	var op = btn.text().trim();
 	btn.button('loading');
-	//setTimeout(function () {
-	//	btn.button('reset');
-	//}, 10000);
 	$.get( 'ctrl?op=' + op, function ( data ) {
 		switch (data.status) {
 			case "error":
 				btn.button('error');
+				setTimeout(function () {
+					btn.button('reset');
+				}, 3000);
 				break;
 			case "ok":
 				btn.button('reset');				
