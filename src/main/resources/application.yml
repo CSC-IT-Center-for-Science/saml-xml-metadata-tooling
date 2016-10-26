@@ -1,4 +1,13 @@
 spring.http.multipart:
    max-file-size: 3MB
    max-request-size: 3MB
+
 logging.level.fi.csc.virtu.samlxmltooling: DEBUG
+
+my.federations:
+   Virtu:
+      mdUrl: "https://virtu-ds.csc.fi/fed/virtu/virtu-metadata-v3.xml"
+      mdCertFile: "/Users/klaalo/Virtu/virtu-metadata-signing-crt-2015.pem"
+   Haka:
+      mdUrl: "https://haka.funet.fi/metadata/haka-metadata.xml"
+      mdCertFile: "/Users/klaalo/Haka/haka-sign-v3.pem"
