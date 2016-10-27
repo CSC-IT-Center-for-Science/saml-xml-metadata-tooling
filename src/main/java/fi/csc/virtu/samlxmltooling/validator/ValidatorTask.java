@@ -55,6 +55,10 @@ public class ValidatorTask {
 		return myUuid;
 	}
 	
+	public String getFlavor() {
+		return myFlavor;
+	}
+	
 	private void update() {
 		this.latestAccess = LocalDateTime.now();
 	}

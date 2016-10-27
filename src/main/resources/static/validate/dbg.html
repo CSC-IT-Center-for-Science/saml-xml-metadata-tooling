@@ -12,6 +12,7 @@
 	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"
       type="text/css"  />
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<script src="//www.jsviews.com/download/jsrender.js"></script>
 	<style>
 	.glyphicon-spin {
     	-webkit-animation: spin 1000ms infinite linear;
@@ -42,53 +43,81 @@
 <body>
 <div class="container">
 	<div class="col-md-12">
-		<h1>Diff debug</h1>
+		<h1>Validate debug</h1>
 	</div>
 	<div class="col-sm-12">
-		<p>
-		<button class="btn btn-default req" 
-					data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-					data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-					data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-					id="reqTaskHaka">checkValidUntil
-		</button>
-		<button class="btn btn-default req" 
-					data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-					data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-					data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-					id="reqTaskHaka">checkSchema
-		</button>
-		<button class="btn btn-default req" 
+		<form class="form-inline">
+		<select class="form-control" id="flavors">
+		</select>
+		<button class="btn btn-default" 
 				data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
 				data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
 				data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-				id="reqTaskHaka">checkSig
+				id="reqTask">reqTask
 		</button>
-		<button class="btn btn-default req" 
-					data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-					data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-					data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-					id="reqTaskHaka">checkCertsEqual
-		</button>
-		<button class="btn btn-default req" 
-					data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-					data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-					data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-					id="reqTaskHaka">checkCertValidity
-		</button>
+		</form>
+		<p id='buttons'>
 		</p>
-		<button class="btn btn-default req" 
-					data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-					data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-					data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-					id="reqTaskHaka">reqTask
+		<button class="btn btn-default" 
+				data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+				data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+				data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+				id="runChecks">runChecks
 		</button>
-		<p>
+		<table class="table" style='width: auto;'>
+			<thead>
+				<tr>
+					<td style='font-weight: bold; background-color: ghostwhite; border-top-left-radius: 15px;'>check</td>
+					<td style='font-weight: bold; background-color: ghostwhite; border-top-right-radius: 15px;'>status</td>
+				</tr>
+			</thead>
+			<tbody id='validateResults'></tbody>
+		</table>
 	</div>
 </div>
+
+<script id='opBtn' type="text/x-jsrender">
+<button class="btn btn-default req" 
+		data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+		data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+		data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+		>{{:op}}
+</button>
+</script>
+<script type="text/x-jsrender" id='statRow'>
+<tr>
+	<td>{{:check}}</td><td>{{:status}}</td>
+</tr>
+</script>
+
 <script type="text/javascript">
 
-$('.req').on('click', function ( event ) {
+function timeBtn(btn) {
+	setTimeout(function () {
+		btn.button('reset');
+	}, 3000);
+}
+
+var btnTmpl = $.templates('#opBtn');
+var trTmpl = $.templates('#statRow');
+
+$(document).ready(function() {
+	$.get('getFlavors', function (data) {
+		$('select#flavors').empty();
+		$.each(data, function (index, value) {
+			$('select#flavors').append("<option>" + value + "</option>");
+		});
+	});
+	$.get('getOps', function (data) {
+		$.each(data, function (index, value) {
+			if (value != "reqTask") {
+				$('#buttons').append(btnTmpl.render({op:value}));
+			}
+		});	
+	});
+});
+
+$(document.body).on('click', 'button.req', function ( event ) {
 	event.preventDefault(); 
 	var btn = $(this);
 	var op = btn.text().trim();
@@ -97,13 +126,44 @@ $('.req').on('click', function ( event ) {
 		switch (data.status) {
 			case "error":
 				btn.button('error');
-				setTimeout(function () {
-					btn.button('reset');
-				}, 3000);
+				timeBtn(btn);
 				break;
 			case "ok":
-				btn.button('reset');				
+				btn.button('reset');
+				break;
 		}
+	});
+});
+
+$('button#reqTask').on('click', function (event) {
+	event.preventDefault();
+	var btn = $(this);
+	btn.button('loading');
+	var flavor = $('select#flavors option:selected').text().trim();
+	$.get( 'ctrl?op=reqTask&flavor=' + flavor, function ( data ) {
+		if (data.status == "ok") {
+			btn.button('reset');				
+		} else {
+			timeBtn(btn);
+		}
+	});
+});
+
+$('button#runChecks').on('click', function (event) {
+	event.preventDefault();
+	$('#validateResults').empty();
+	$('button.req').each(function (index, value) {
+		var op = $(value).text();
+		$.get('ctrl?op=' + op, function (data) {
+			var statSpan;
+			if (data.status == "ok") {
+				statSpan = "<span style='color: green;' class='glyphicon glyphicon-ok'></span>"
+			} else {
+				statSpan = "<span style='color: red;' class='glyphicon glyphicon-remove'></span>"
+			}
+			$('#validateResults').append(trTmpl.render({check:op,status:statSpan}));
+		});
+		
 	});
 });
 

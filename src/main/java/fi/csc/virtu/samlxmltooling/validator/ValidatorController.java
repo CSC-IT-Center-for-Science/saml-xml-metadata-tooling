@@ -1,6 +1,8 @@
 package fi.csc.virtu.samlxmltooling.validator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -52,12 +54,15 @@ public class ValidatorController {
 			HttpSession session) {
 		final Map<String, String> retMap = new HashMap<String, String>();
 		
+		if (flavor == null) {
+			flavor = conf.getFederations().get(0);
+		}
 		ValidatorTask task;
 		try {
-			task = getTask(session, "Virtu");
-		} catch (Exception e1) {
-			putErrors(retMap, e1);
-			e1.printStackTrace();
+			task = getTask(session, flavor);
+		} catch (Exception e) {
+			putErrors(retMap, e);
+			log.debug("unable to fetch task", e);
 			return retMap;
 		}
 		
@@ -78,8 +83,15 @@ public class ValidatorController {
 			putStatus(retMap, task.checkCertValidity());
 			break;
 		case reqTask:
-			putStatus(retMap, true);
-			retMap.put("task", task.getMyUuid());
+			try {
+				task = getNewTask(session, flavor);
+				putStatus(retMap, true);
+				retMap.put("task", task.getMyUuid());
+				retMap.put("taskFlavor", task.getFlavor());
+			} catch (Exception e) {
+				putErrors(retMap, e);
+				log.warn("error while creating new task", e);
+			}
 			break;
 		}
 		
@@ -90,6 +102,32 @@ public class ValidatorController {
 		
 		log.debug("-- ctrl returning");
 		return retMap;
+	}
+	
+	@GetMapping("/getFlavors")
+	@ResponseBody
+	public List<String> getFlavors() {
+		return conf.getFederations();
+	}
+	
+	@GetMapping("/getOps")
+	@ResponseBody
+	public List<String> getOps() {
+		List<String> opsList = new ArrayList<String>();
+		for (ops op: ops.values()) {
+			String opStr = op.toString();
+			log.trace("-- op: " + opStr);
+			opsList.add(opStr);
+		}
+		return opsList;
+	}
+	
+	
+	private ValidatorTask getNewTask(HttpSession session, String flavor) throws Exception {
+		if (sessionHasTask(session)) {
+			taskList.remove(session.getId());
+		}
+		return getTask(session, flavor);
 	}
 	
 	private ValidatorTask getTask(HttpSession session, String flavor) throws Exception {
