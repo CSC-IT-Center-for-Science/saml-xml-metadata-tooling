@@ -1,14 +1,8 @@
 package fi.csc.virtu.samlxmltooling.validator;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.security.Key;
-import java.security.PublicKey;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.xml.security.exceptions.XMLSecurityException;
@@ -30,8 +24,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import fi.csc.virtu.samlxmltooling.diffservlet.DiffController;
-import fi.csc.virtu.samlxmltooling.tools.GeneralStrings;
 import net.shibboleth.tool.xmlsectool.InitializationSupport;
 import net.shibboleth.tool.xmlsectool.ReturnCode;
 import net.shibboleth.tool.xmlsectool.Terminator;
@@ -42,16 +34,14 @@ public class SigChecker {
 	
 	final static Logger log  = LoggerFactory.getLogger(SigChecker.class);
 	
-	public static void checkSig (Map<String, String> retMap,
-			Document doc,
-			String filename) {
+	public static boolean checkSig (Document doc,
+			X509Certificate checkCert) {
 
         try {
             InitializationSupport.initialize();
         } catch (final InitializationException e) {
             log.error("Unable to initialize OpenSAML library", e);
-            putErrors(retMap, e);
-            return;
+            return false;
         }
 		
 		log.debug("-- start checking signature");
@@ -59,8 +49,7 @@ public class SigChecker {
         if (signatureElement == null) {
         	final String message = "Signature required but XML document is not signed"; 
             log.error(message);
-            putErrors(retMap, message);
-            return;
+            return false;
             
         }
         //log.debug("XML document contained Signature element\n{}", SerializeSupport.prettyPrintXML(signatureElement));
@@ -71,22 +60,20 @@ public class SigChecker {
             signature = new XMLSignature(signatureElement, "");
         } catch (final XMLSecurityException e) {
             log.error("Unable to read XML signature", e);
-            putErrors(retMap, e);
-            return;
+            return false;
         }
 
         if (signature.getObjectLength() != 0) {
         	final String message = "Signature contained an Object element, this is not allowed";
             log.error(message);
-            putErrors(retMap, message);
-            return;
+            return false;
         }
         
         final Reference ref = extractReference(signature);
         markIdAttribute(doc.getDocumentElement(), ref);
         
         try {
-            Key verificationKey = getPublicKey(filename);
+            Key verificationKey = checkCert.getPublicKey();
             log.debug("Verifying XML signature with key\n{}", Base64.encodeBase64String(verificationKey.getEncoded()));
             if (signature.checkSignatureValue(verificationKey)) {
                 /*
@@ -100,41 +87,17 @@ public class SigChecker {
                  */
                 validateSignatureReference(doc, extractReference(signature));
                 log.debug("XML document signature verified.");
-                retMap.put(DiffController.STATUS_STR, DiffController.OK_STR);
-                return;
+                return true;
             } else {
             	final String message = "XML document signature verification failed"; 
                 log.error(message);
-                putErrors(retMap, message);
-                return;
+                return false;
             }
-        } catch (final XMLSignatureException | CertificateException | IOException e) {
+        } catch (final XMLSignatureException e) {
             log.error("XML document signature verification failed with an error", e);
-            putErrors(retMap, e);
-            return;
+            return false;
         }
 
-	}
-	
-	private static PublicKey getPublicKey (String filename) throws CertificateException, IOException  {
-		
-		CertificateFactory certFact = CertificateFactory.getInstance(GeneralStrings.X509);
-		FileInputStream is = new FileInputStream(filename);
-		X509Certificate cert = (X509Certificate) certFact.generateCertificate(is);
-		is.close();
-		
-		return cert.getPublicKey();
-	}
-	
-	private static void putErrors (Map<String, String> retMap, Exception e) {
-		retMap.put(DiffController.STATUS_STR, DiffController.ERROR_STR);
-		retMap.put(DiffController.ERROR_STR, e.getMessage());
-		e.printStackTrace();
-	}
-	
-	private static void putErrors (Map<String, String> retMap, String message) {
-		retMap.put(DiffController.STATUS_STR, DiffController.ERROR_STR);
-		retMap.put(DiffController.ERROR_STR, message);
 	}
 	
     /**

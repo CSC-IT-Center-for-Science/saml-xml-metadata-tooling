@@ -15,6 +15,8 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.codec.binary.Base64;
 import org.w3c.dom.Document;
 
+import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
+
 public class CertTool {
 	
 	public static X509Certificate getCertFromStr(String certStr) {
@@ -35,7 +37,7 @@ public class CertTool {
 	
 	public static boolean certsEqual (X509Certificate base,
 			X509Certificate comp) {
-		return base.equals(comp) ? true : false;
+		return base.equals(comp);
 	}
 	
 	public static boolean certsEqual (String baseStr, String compStr) {
@@ -43,12 +45,14 @@ public class CertTool {
 				getCertFromStr(compStr));
 	}
 	
-	/*public static boolean certsEqual (String baseStr, String filename) throws CertificateException, IOException {
-		return certsEqual(
-				getCertFromStr(baseStr),
-				getCertFromFile(filename)
-				);
-	}*/
+	public static boolean certsEqual(Document doc, X509Certificate comp) {
+		try {
+			return certsEqual(getCertFromDoc(doc), comp);
+		} catch (XPathExpressionException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 	
 	public static X509Certificate getCertFromFile(String filename) throws CertificateException, IOException {
 
@@ -67,9 +71,9 @@ public class CertTool {
 				expr.evaluate(doc);
 		return getCertFromStr(certStr);
 	}
-
-	public static boolean certsEqual(X509Certificate certFromDoc, String filename) throws CertificateException, IOException {
-		return certsEqual(certFromDoc, getCertFromFile(filename));
+	
+	public static X509Certificate getFedCheckCert (String flavor, MainConfiguration conf) throws Exception {
+		return getCertFromFile(conf.getFedConfStr(flavor, GeneralStrings.PROP_FED_CERTFILE));
 	}
 	
 }

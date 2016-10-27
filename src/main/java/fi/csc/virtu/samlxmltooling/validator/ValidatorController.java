@@ -1,7 +1,5 @@
 package fi.csc.virtu.samlxmltooling.validator;
 
-import java.io.IOException;
-import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -9,8 +7,6 @@ import java.util.TimerTask;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +15,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 import com.github.vbauer.herald.annotation.Log;
 
 import fi.csc.virtu.samlxmltooling.diffservlet.DiffController;
 import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
 import fi.csc.virtu.samlxmltooling.tools.CertTool;
-import fi.csc.virtu.samlxmltooling.tools.GeneralStrings;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 
 @Controller
@@ -47,8 +40,8 @@ public class ValidatorController {
 	private Timer taskCleaner = new Timer();
 	
 	public enum ops {
-		checkSchemaCurrent, checkSignCurrent, checkValidUntilCurrent, checkCertsEqualCurrent,
-		checkCertValidityCurrent,
+		checkSchema, checkSig, checkValidUntil, checkCertsEqual,
+		checkCertValidity,
 		reqTask
 	}
 
@@ -62,45 +55,27 @@ public class ValidatorController {
 		ValidatorTask task;
 		try {
 			task = getTask(session, "Virtu");
-		} catch (IOException | ParserConfigurationException | SAXException e1) {
+		} catch (Exception e1) {
 			putErrors(retMap, e1);
 			e1.printStackTrace();
 			return retMap;
 		}
 		
-		log.debug("-- getting document");
-		Document doc = task.getDoc();
-		
-		String filename = conf.getFedConfStr("Virtu", GeneralStrings.PROP_FED_CERTFILE);
-		
 		switch (ops.valueOf(op)) {
-		case checkSchemaCurrent: 
-			SchemaValidatorTool.validate(retMap, doc);
+		case checkValidUntil:
+			putStatus(retMap, task.checkValidUntil());
 			break;
-		case checkSignCurrent:
-			SigChecker.checkSig(retMap, doc, filename);
+		case checkSchema: 
+			putStatus(retMap, task.checkSechema());
 			break;
-		case checkValidUntilCurrent:
-			putStatus(retMap, ValidUntilChecker.checkRange(doc, 27, 32));
+		case checkSig:
+			putStatus(retMap, task.checkSig());
 			break;
-		case checkCertsEqualCurrent:
-			try {
-				putStatus(retMap, CertChecker.certsEqual(doc, filename));
-			} catch (CertificateException | XPathExpressionException | IOException e) {
-				putErrors(retMap, e);
-				e.printStackTrace();
-				return retMap;
-			}
+		case checkCertsEqual:
+			putStatus(retMap, task.checkCertsEqual());
 			break;
-		case checkCertValidityCurrent:
-			try {
-				putStatus(retMap, CertChecker.certValidityInRange(
-						CertTool.getCertFromDoc(doc), 30, 735));
-			} catch (XPathExpressionException e) {
-				putErrors(retMap, e);
-				e.printStackTrace();
-				return retMap;
-			}
+		case checkCertValidity:
+			putStatus(retMap, task.checkCertValidity());
 			break;
 		case reqTask:
 			putStatus(retMap, true);
@@ -117,12 +92,16 @@ public class ValidatorController {
 		return retMap;
 	}
 	
-	private ValidatorTask getTask(HttpSession session, String flavor) throws IOException, ParserConfigurationException, SAXException {
+	private ValidatorTask getTask(HttpSession session, String flavor) throws Exception {
 		final String sessionId = session.getId();
 		if (sessionHasTask(session)) {
 			return taskList.get(sessionId);
 		} else {
-			ValidatorTask task = new ValidatorTask(sessionId, docBuilder.getCurrent(flavor));
+			ValidatorTask task = new ValidatorTask(sessionId, 
+					docBuilder.getCurrent(flavor),
+					CertTool.getFedCheckCert(flavor, conf),
+					conf,
+					flavor);
 			taskList.put(sessionId, task);
 			return task;
 		}

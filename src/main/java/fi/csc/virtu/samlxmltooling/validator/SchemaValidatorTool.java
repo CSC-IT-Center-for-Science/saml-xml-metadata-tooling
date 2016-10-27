@@ -2,7 +2,6 @@ package fi.csc.virtu.samlxmltooling.validator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 import javax.xml.transform.dom.DOMSource;
 
@@ -10,7 +9,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import fi.csc.virtu.samlxmltooling.diffservlet.DiffController;
+import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
 import net.shibboleth.tool.xmlsectool.SchemaValidator;
 import net.shibboleth.utilities.java.support.xml.SchemaBuilder.SchemaLanguage;
 
@@ -18,17 +17,16 @@ public class SchemaValidatorTool {
 
 	final static Logger log  = Logger.getLogger(SchemaValidatorTool.class);
 	
-	public static void validate (Map<String, String> retMap,
-			Document doc) {
+	public static boolean validate (Document doc, MainConfiguration conf) {
 
 		log.debug("-- getting validator");
 		final SchemaValidator validator;
 		try {
 			validator = new SchemaValidator(SchemaLanguage.XML,
-					new File("/Users/klaalo/Haka/metadata_schema/"));
+					new File(conf.getSchemaDir()));
 		} catch (SAXException e) {
-			putErrors(retMap, e);
-			return;
+			log.debug(e);
+			return false;
 		}
 		
 		// Allow DTD fetch by http by setting:
@@ -43,18 +41,12 @@ public class SchemaValidatorTool {
 			log.debug("-- validating");
 			validator.validate(new DOMSource(doc.getDocumentElement()));
 		} catch (SAXException | IOException e) {
-			putErrors(retMap, e);
+			log.debug(e);
+			return false;
 		}
 		
-		retMap.put(DiffController.STATUS_STR, DiffController.OK_STR);
+		return true;
 		
 	}
-	
-	private static void putErrors (Map<String, String> retMap, Exception e) {
-		retMap.put(DiffController.STATUS_STR, DiffController.ERROR_STR);
-		retMap.put(DiffController.ERROR_STR, e.getMessage());
-		e.printStackTrace();
-	}
-
-	
+		
 }

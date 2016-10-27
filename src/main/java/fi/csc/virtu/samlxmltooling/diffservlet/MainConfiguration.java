@@ -18,16 +18,17 @@ import fi.csc.virtu.samlxmltooling.tools.GeneralStrings;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 
 @Configuration
-@ConfigurationProperties(prefix="my")
+@ConfigurationProperties(prefix="my.validator")
 public class MainConfiguration {
 
-	@Value("${my.federationSpecs.Haka.mdUrl}")
+	@Value("${my.validator.federationSpecs.Haka.mdUrl}")
 	private String currentUrlHaka; 
 
-	@Value("${my.federationSpecs.Virtu.mdUrl}")
+	@Value("${my.validator.federationSpecs.Virtu.mdUrl}")
 	private String currentUrlVirtu;
 	
-	List<String> federations;
+	private List<String> federations;
+	private String schemaDir;	
 	
 	@Autowired
 	Environment env;
@@ -71,9 +72,21 @@ public class MainConfiguration {
 	}
 	
 	public String getFedConfStr(String fed, String prop) {
-		return env.getProperty(GeneralStrings.PROP_FED_FREFIX +
+		return env.getProperty(GeneralStrings.PROP_FED_PREFIX +
 				fed + "." +
 				prop);
+	}
+	public int getFedConfInt(String fed, String prop) {
+		return Integer.parseInt(env.getProperty(GeneralStrings.PROP_FED_PREFIX +
+				fed + "." +
+				prop));
+	}
+	
+	public String getSchemaDir() {
+		return schemaDir;
+	}
+	public void setSchemaDir (String schemaDir) {
+		this.schemaDir = schemaDir;
 	}
 	
 	@Bean

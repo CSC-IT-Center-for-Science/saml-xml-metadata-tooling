@@ -1,7 +1,5 @@
 package fi.csc.virtu.samlxmltooling.validator;
 
-import java.io.IOException;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -23,15 +21,24 @@ public class CertChecker {
 	final static Logger log  = LoggerFactory.getLogger(CertChecker.class);
 	
 	public static boolean certsEqual (Document doc,
-			String filename) throws CertificateException, IOException, XPathExpressionException {
-		
-		return CertTool.certsEqual(CertTool.getCertFromDoc(doc), filename);
+			X509Certificate checkCert) {
+		try {
+			return CertTool.certsEqual(CertTool.getCertFromDoc(doc), checkCert);
+		} catch (XPathExpressionException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
 	public static boolean certValidityInRange (Document doc,
 			int minDays,
-			int maxDays) throws XPathExpressionException {
-		return certValidityInRange(CertTool.getCertFromDoc(doc), minDays, maxDays);
+			int maxDays) {
+		try {
+			return certValidityInRange(CertTool.getCertFromDoc(doc), minDays, maxDays);
+		} catch (XPathExpressionException e) {
+			log.debug("XPathError while fetching cert from doc", e);
+			return false;
+		}
 	}
 	
 	public static boolean certValidityInRange (X509Certificate cert,
