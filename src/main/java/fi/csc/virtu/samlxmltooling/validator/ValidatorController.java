@@ -184,10 +184,14 @@ public class ValidatorController {
 
 		@Override
 		public void run() {
+			List<String> remList = new ArrayList<String>();
 			for (String taskOwner: taskList.keySet()) {
 				if (!taskList.get(taskOwner).isActive()) {
-					taskList.remove(taskOwner);
+					remList.add(taskOwner);
 				}
+			}
+			for (String rem: remList) {
+				taskList.remove(rem);
 			}
 		}
 		
