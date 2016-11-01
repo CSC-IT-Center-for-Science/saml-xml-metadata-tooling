@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
@@ -20,10 +19,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.github.vbauer.herald.annotation.Log;
 
+import fi.csc.virtu.samlxmltooling.Task;
 import fi.csc.virtu.samlxmltooling.diffservlet.DiffController;
 import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
 import fi.csc.virtu.samlxmltooling.tools.CertTool;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
+import fi.csc.virtu.samlxmltooling.tools.TaskCleaner;
 
 @Controller
 @RequestMapping("/validate/")
@@ -38,7 +39,7 @@ public class ValidatorController {
 	@Autowired
 	MainConfiguration conf;
 	
-	private Map<String, ValidatorTask> taskList = new HashMap<String, ValidatorTask>();
+	private Map<String, Task> taskList = new HashMap<String, Task>();
 	private Timer taskCleaner = new Timer();
 	
 	public enum ops {
@@ -133,7 +134,7 @@ public class ValidatorController {
 	private ValidatorTask getTask(HttpSession session, String flavor) throws Exception {
 		final String sessionId = session.getId();
 		if (sessionHasTask(session)) {
-			return taskList.get(sessionId);
+			return (ValidatorTask) taskList.get(sessionId);
 		} else {
 			ValidatorTask task = new ValidatorTask(sessionId, 
 					docBuilder.getCurrent(flavor),
@@ -172,29 +173,6 @@ public class ValidatorController {
 	@PostConstruct
 	public void scheduleCleaner() {
 		taskCleaner.scheduleAtFixedRate(new TaskCleaner(taskList), 30000, 30000);
-	}
-	
-	private static class TaskCleaner extends TimerTask {
-		
-		private Map<String, ValidatorTask> taskList;
-		
-		public TaskCleaner(Map<String, ValidatorTask> taskList) {
-			this.taskList = taskList;
-		}
-
-		@Override
-		public void run() {
-			List<String> remList = new ArrayList<String>();
-			for (String taskOwner: taskList.keySet()) {
-				if (!taskList.get(taskOwner).isActive()) {
-					remList.add(taskOwner);
-				}
-			}
-			for (String rem: remList) {
-				taskList.remove(rem);
-			}
-		}
-		
 	}
 	
 }

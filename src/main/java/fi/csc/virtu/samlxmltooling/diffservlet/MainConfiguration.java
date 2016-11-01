@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
+import fi.csc.virtu.samlxmltooling.diffservlet.DiffTask.TaskFlavor;
 import fi.csc.virtu.samlxmltooling.tools.GeneralStrings;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 

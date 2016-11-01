@@ -2,13 +2,9 @@ package fi.csc.virtu.samlxmltooling.diffservlet;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -30,8 +26,10 @@ import org.xml.sax.SAXException;
 
 import com.github.vbauer.herald.annotation.Log;
 
-import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
+import fi.csc.virtu.samlxmltooling.Task;
+import fi.csc.virtu.samlxmltooling.diffservlet.DiffTask.TaskFlavor;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
+import fi.csc.virtu.samlxmltooling.tools.TaskCleaner;
 
 @RestController
 public class DiffController {
@@ -61,7 +59,7 @@ public class DiffController {
 	public String getChangeController (HttpServletRequest req) {
 		String sessId = req.getSession().getId();
 		TaskFlavor flavor = conf.findFlavorFromRequest(req); 
-		Task task = getTask(sessId, flavor);
+		DiffTask task = getTask(sessId, flavor);
 		return task.getChangeString();
 	}
 
@@ -74,7 +72,7 @@ public class DiffController {
 		String sessId = req.getSession().getId();
 		String op = req.getParameter("op");
 		TaskFlavor flavor = conf.findFlavorFromRequest(req); 
-		Task task = getTask(sessId, flavor);
+		DiffTask task = getTask(sessId, flavor);
 		retMap.put("taskIdle", String.valueOf(task.idleSeconds()));
 		if (op != null) {
 			switch (op) {
@@ -177,61 +175,37 @@ public class DiffController {
 	}
 	
 	
-	private Task getTask(String sessId) {
+	private DiffTask getTask(String sessId) {
 		return getTask(sessId, conf.DEFAULT_FLAVOR);
 	}
 	
-	private Task getTask(String sessId, TaskFlavor flavor) {
+	private DiffTask getTask(String sessId, TaskFlavor flavor) {
 		if (!taskList.containsKey(sessId)) {
-			Task task = getNewTask(sessId, flavor);
+			DiffTask task = getNewTask(sessId, flavor);
 			taskList.put(sessId, task);
 			return task;
 		} else {
-			return taskList.get(sessId);
+			return (DiffTask) taskList.get(sessId);
 		}
 	}
 	
-	private Task getNewTask(String sessId, TaskFlavor flavor) {
+	private DiffTask getNewTask(String sessId, TaskFlavor flavor) {
 		if (taskList.containsKey(sessId)) {
 			taskList.remove(sessId);
 		} 
-		Task task = taskFactory(flavor);
+		DiffTask task = taskFactory(flavor);
 		taskList.put(sessId, task);
 		return task;
 	}
 	
-	private Task taskFactory(TaskFlavor flavor) {
-		return new Task(flavor, docBuilder);
+	private DiffTask taskFactory(TaskFlavor flavor) {
+		return new DiffTask(flavor, docBuilder);
 	}
 
 	
-	private static class TasksCleaner extends TimerTask {
-
-		private Map<String, Task> taskList;
-		public TasksCleaner(Map<String, Task> taskList) {
-			this.taskList = taskList;
-		}
-
-		@Override
-		public void run() {
-			List<String> removable = new ArrayList<String>();
-			for (String key : taskList.keySet()) {
-				Task task = taskList.get(key); 
-				if (!task.isActive()) {
-					removable.add(key);
-				}
-			}
-			Iterator<String> i = removable.iterator();
-			while (i.hasNext()) {
-				taskList.remove(i.next());
-			}
-		}
-		
-	}
-
 	@PostConstruct
 	public void scheduleCleaner() {
-		cleaner.scheduleAtFixedRate(new TasksCleaner(taskList), 300000, 300000);
+		cleaner.scheduleAtFixedRate(new TaskCleaner(taskList), 300000, 300000);
 	}
 	
 }

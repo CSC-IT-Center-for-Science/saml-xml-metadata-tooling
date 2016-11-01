@@ -16,7 +16,7 @@ import org.xml.sax.SAXException;
 import com.github.vbauer.herald.annotation.Log;
 
 import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
-import fi.csc.virtu.samlxmltooling.diffservlet.Task.TaskFlavor;
+import fi.csc.virtu.samlxmltooling.diffservlet.DiffTask.TaskFlavor;
 
 public class SamlDocBuilder {
 	

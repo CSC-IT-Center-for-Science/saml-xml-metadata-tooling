@@ -9,10 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
+import fi.csc.virtu.samlxmltooling.Task;
 import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
 import fi.csc.virtu.samlxmltooling.tools.GeneralStrings;
 
-public class ValidatorTask {
+public class ValidatorTask implements Task {
 	
 	private Document doc;
 	private X509Certificate checkCert;
@@ -44,6 +45,7 @@ public class ValidatorTask {
 		return ownerSessionId;
 	}
 	
+	@Override
 	public boolean isActive() {
 		Duration dur = Duration.between(LocalDateTime.now(), latestAccess);
 		long millis = dur.toMillis();

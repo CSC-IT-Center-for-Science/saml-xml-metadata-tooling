@@ -8,12 +8,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import fi.csc.virtu.samlxmltooling.Task;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 import fi.csc.virtu.samlxmltooling.xmldiffer.Change;
 import fi.csc.virtu.samlxmltooling.xmldiffer.XmlDiffer;
 
 
-public class Task {
+public class DiffTask implements Task {
 	
 	SamlDocBuilder docBuilder;
 	
@@ -34,7 +35,7 @@ public class Task {
 	private Change change;
 	private Date latestAccess = new Date();
 	
-	public Task (TaskFlavor myFlavorArg, SamlDocBuilder docBuilder) {
+	public DiffTask (TaskFlavor myFlavorArg, SamlDocBuilder docBuilder) {
 		this.myFlavor = myFlavorArg;
 		this.docBuilder = docBuilder;
 	}
@@ -56,6 +57,7 @@ public class Task {
 		return (new Date().getTime() - latestAccess.getTime()) / 1000;
 	}
 	
+	@Override
 	public boolean isActive() {
 		return idleSeconds() < 600;
 	}
