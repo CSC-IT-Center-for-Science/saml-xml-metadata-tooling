@@ -23,6 +23,7 @@ import fi.csc.virtu.samlxmltooling.Task;
 import fi.csc.virtu.samlxmltooling.diffservlet.DiffController;
 import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
 import fi.csc.virtu.samlxmltooling.tools.CertTool;
+import fi.csc.virtu.samlxmltooling.tools.ControllerTools;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 import fi.csc.virtu.samlxmltooling.tools.TaskCleaner;
 
@@ -62,35 +63,35 @@ public class ValidatorController {
 		try {
 			task = getTask(session, flavor);
 		} catch (Exception e) {
-			putErrors(retMap, e);
+			ControllerTools.putErrors(retMap, e);
 			log.debug("unable to fetch task", e);
 			return retMap;
 		}
 		
 		switch (ops.valueOf(op)) {
 		case checkValidUntil:
-			putStatus(retMap, task.checkValidUntil());
+			ControllerTools.putStatus(retMap, task.checkValidUntil());
 			break;
 		case checkSchema: 
-			putStatus(retMap, task.checkSechema());
+			ControllerTools.putStatus(retMap, task.checkSechema());
 			break;
 		case checkSig:
-			putStatus(retMap, task.checkSig());
+			ControllerTools.putStatus(retMap, task.checkSig());
 			break;
 		case checkCertsEqual:
-			putStatus(retMap, task.checkCertsEqual());
+			ControllerTools.putStatus(retMap, task.checkCertsEqual());
 			break;
 		case checkCertValidity:
-			putStatus(retMap, task.checkCertValidity());
+			ControllerTools.putStatus(retMap, task.checkCertValidity());
 			break;
 		case reqTask:
 			try {
 				task = getNewTask(session, flavor);
-				putStatus(retMap, true);
+				ControllerTools.putStatus(retMap, true);
 				retMap.put("task", task.getMyUuid());
 				retMap.put("taskFlavor", task.getFlavor());
 			} catch (Exception e) {
-				putErrors(retMap, e);
+				ControllerTools.putErrors(retMap, e);
 				log.warn("error while creating new task", e);
 			}
 			break;
@@ -125,7 +126,7 @@ public class ValidatorController {
 	
 	
 	private ValidatorTask getNewTask(HttpSession session, String flavor) throws Exception {
-		if (sessionHasTask(session)) {
+		if (ControllerTools.sessionHasTask(session, taskList)) {
 			taskList.remove(session.getId());
 		}
 		return getTask(session, flavor);
@@ -133,7 +134,7 @@ public class ValidatorController {
 	
 	private ValidatorTask getTask(HttpSession session, String flavor) throws Exception {
 		final String sessionId = session.getId();
-		if (sessionHasTask(session)) {
+		if (ControllerTools.sessionHasTask(session, taskList)) {
 			return (ValidatorTask) taskList.get(sessionId);
 		} else {
 			ValidatorTask task = new ValidatorTask(sessionId, 
@@ -146,29 +147,6 @@ public class ValidatorController {
 		}
 	}
 	
-	private boolean sessionHasTask(HttpSession session) {
-		for (String taskOwner: taskList.keySet()) {
-			if (taskOwner.equals(session.getId())) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private static void putStatus(Map<String, String> retMap, boolean status) {
-		if (status) {
-			retMap.put(DiffController.STATUS_STR, DiffController.OK_STR);
-		} else {
-			retMap.put(DiffController.STATUS_STR, DiffController.ERROR_STR);
-		}
-		
-	}
-	
-	private static void putErrors (Map<String, String> retMap, Exception e) {
-		retMap.put(DiffController.STATUS_STR, DiffController.ERROR_STR);
-		retMap.put(DiffController.ERROR_STR, e.getMessage());
-		e.printStackTrace();
-	}
 	
 	@PostConstruct
 	public void scheduleCleaner() {
