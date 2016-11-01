@@ -47,10 +47,58 @@
 		<h1>Import signed metadata file</h1>
 	</div>
 	<div class="col-sm-12">
-		<form class="form-inline">
+		<form class="form-inline" style="border-top: 1px dotted gainsboro; border-bottom: 1px dotted gainsboro; padding: 0.5em;">
+			<div class="form-group">
+				<input type="file" id="importFile" name="importFile">
+			</div>
+			<button type="submit" class="btn btn-default" id="submitImportFile">Submit</button>
 		</form>
 	</div>
 </div>
+
+<script type="text/javascript">
+
+$('#submitImportFile').on('click', function(event) {
+	event.preventDefault();
+	var file = $('#importFile')[0].files[0];
+	if (file.name != "") {
+		var data = new FormData();
+		data.append("importFile", file);
+
+	    $.ajax({
+	        url: 'ctrl',
+	        type: 'POST',
+	        data: data,
+	        cache: false,
+	        dataType: 'json',
+	        processData: false, // Don't process the files
+	        contentType: false, // Set content type to false as jQuery will tell the server its a query string request
+	        success: function(data, textStatus, jqXHR)
+	        {
+	            if(typeof data.error === 'undefined')
+	            {
+	                // Success so call function to process the form
+	                //submitForm(event, data);
+	            }
+	            else
+	            {
+	                // Handle errors here
+	                console.log('STATUS:' + data.status);
+	                console.log('ERRORS: ' + data.error);
+	            }
+	        },
+	        error: function(jqXHR, textStatus, errorThrown)
+	        {
+	            // Handle errors here
+	            console.log('ERRORS: ' + textStatus);
+	            // STOP LOADING SPINNER
+	        }
+	    });
+		
+	}
+});
+
+</script>
 
 </body>
 </html>

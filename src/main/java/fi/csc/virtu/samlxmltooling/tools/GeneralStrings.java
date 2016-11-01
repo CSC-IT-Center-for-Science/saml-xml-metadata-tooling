@@ -16,6 +16,8 @@ public class GeneralStrings {
 	public final static String PROP_FED_SIGCERTVALID_MIN = "sigCertValidMin";
 	public final static String PROP_FED_SIGCERTVALID_MAX = "sigCertValidMax";
 	
+	public final static String PROP_FED_PUBLISH_FILE = "publishFile";
+	
 	public final static String XPATH_FOR_MD_SIG_CERT =
 			"/*[local-name()='EntitiesDescriptor']/*[local-name()='Signature']/*[local-name()='KeyInfo']/*[local-name()='X509Data']/*[local-name()='X509Certificate']/text()";
 }
