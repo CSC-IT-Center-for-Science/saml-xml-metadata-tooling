@@ -70,31 +70,70 @@
 		</form>
 	</div>
 
-	<div class="col-md-12" id='prePublishTests' style="display: none;">
+	<div class="row"  id='prePublishTests' style="display: none;">
+	<div class="col-md-12">
 		<h2>2. Run pre-publish tests</h2>
-			<button 
-				type="submit"
-				class="btn btn-default opReq"
-				data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-				data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-				data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
-				>prePublishTests</button>
 	</div>
+	<div class="col-md-2">
+		<button 
+			type="submit"
+			class="btn btn-default opReq"
+			data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
+			data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+			data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+			>prePublishChecks</button>
+	</div>
+	<div class="col-md-10">
+		<table class="table" style='width: auto;'>
+			<thead>
+				<tr>
+					<td style='font-weight: bold; background-color: ghostwhite; border-top-left-radius: 15px;'>check</td>
+					<td style='font-weight: bold; background-color: ghostwhite; border-top-right-radius: 15px;'>status</td>
+				</tr>
+			</thead>
+			<tbody id='validateResults'></tbody>
+		</table>
+		
+	</div>
+	</div>
+	
+	<div class="row"  id='runDiff' style="display: none;">
+	<div class="col-md-12">
+		<h2>3. Run diff</h2>
+	</div>
+	
 
 </div>
 
+<script type="text/x-jsrender" id='statRow'>
+<tr>
+	<td>{{:check}}</td><td>{{:status}}</td>
+</tr>
+</script>
+
+
 <script type="text/javascript">
 
-function importComplete(btn) {
+function btnDisabled(btn) {
 	btn.button('done');
-	setTimeout(function() {
-		$('#submitImportFile').prop('disabled', true);
-	}, 100);
+	setTimeout(function(btn) {
+		btn.prop('disabled', true);
+	}, 100, btn);
+	
+}
+
+function importComplete(btn) {
+	btnDisabled(btn);
    	$('#importFile').prop('disabled', true);
    	$('#prePublishTests').toggle(true);
    	$('#importFrm').prepend(
 		"<span style='color: green;' class='glyphicon glyphicon-ok'></span>"
 	);	
+}
+
+function preChecksComplete(btn) {
+	btnDisabled(btn);
+	$('#runDiff').toggle(true);
 }
 
 $('#submitImportFile').on('click', function(event) {
@@ -131,7 +170,22 @@ $('button.opReq').on('click', function(event) {
 	var btn = $(this);
 	var op = btn.text().trim();
 	btn.button('loading');
+	var trTmpl = $.templates('#statRow');
 	$.get( 'ctrl?op=' + op, function(data) {
+		if (data.status != 'error') {
+			$.each(data, function(check, status) {
+				var statSpan;
+				if (status == "ok") {
+					statSpan = "<span style='color: green;' class='glyphicon glyphicon-ok'></span>"
+				} else {
+					statSpan = "<span style='color: red;' class='glyphicon glyphicon-remove'></span>"
+				}
+				$('#validateResults').append(trTmpl.render({check:check,status:statSpan}));	
+			});
+			preChecksComplete(btn);
+		} else {
+			btn.button('error');
+		}
 	});
 });
 

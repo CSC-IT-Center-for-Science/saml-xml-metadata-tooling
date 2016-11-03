@@ -49,7 +49,15 @@ public class PublishTask implements Task {
 		}
 	}
 	
+	public boolean isInit() {
+		return this.publishFile != null &&
+				this.publishDoc != null;
+	}
+	
 	public Map<String, String> runPrePublishChecks(MainConfiguration conf) {
+		if (!isInit()) {
+			return ControllerTools.getErrorMap("task not initialized");
+		}
 		try {
 			ValidatorTask vTask = new ValidatorTask(
 					publishDoc, 
