@@ -55,7 +55,7 @@ public class PublishController {
 			flavor = conf.getFederations().get(0);
 		}
 
-		PublishTask task = getTask(session, flavor);
+		PublishTask task = getNewTask(session, flavor);
 		File publishFile = new File(conf.getFedConfStr(flavor, GeneralStrings.PROP_FED_PUBLISH_FILE));
 		try {
 			requestFile.transferTo(publishFile);
@@ -65,6 +65,13 @@ public class PublishController {
 			e.printStackTrace();
 		}
 		return retMap;
+	}
+	
+	private PublishTask getNewTask(HttpSession session, String flavor) {
+		if (ControllerTools.sessionHasTask(session, taskList)) {
+			taskList.remove(session.getId());
+		}
+		return getTask(session, flavor);
 	}
 	
 	private PublishTask getTask (HttpSession session, String flavor) {
