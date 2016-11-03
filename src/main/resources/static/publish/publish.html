@@ -248,14 +248,15 @@ function processPublish(data, btn) {
 	var trTmpl = $.templates('#statRow');
 	if (data.status == 'ok') {
 		btn.button('reset');
+		publishOut(data.pubOut);
+		$('#processStatus').empty();
+		$('#processStatus').append(trTmpl.render({check: data.pubRunning, status: data.pubStatus}));
 		if (data.pubStatus == 'okReady') {
 			btnDisabled(btn);
 			$('#compare').toggle(true);
 			scrollDown();
 		} else {
 			btnLabel(btn, 'checkPublishStat');
-			$('#processStatus').empty();
-			$('#processStatus').append(trTmpl.render({check: data.pubRunning, status: data.pubStatus}));
 			if (data.pubStatus == "running") {
 				setTimeout(function(btn) {
 					$.get('ctrl?op=checkPublishStat', function(data) {
@@ -264,7 +265,6 @@ function processPublish(data, btn) {
 				}, 1000, btn);
 			}
 		}
-		publishOut(data.pubOut);
 	}
 }
 
