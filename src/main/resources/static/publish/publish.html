@@ -64,7 +64,7 @@
 				class="btn btn-default" 
 				id="submitImportFile"
 				data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-				data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+				data-done-text="<span style='color: green;' class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
 				data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
 				>Submit</button>
 		</form>
@@ -79,7 +79,7 @@
 			type="submit"
 			class="btn btn-default opReq"
 			data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-			data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+			data-done-text="<span style='color: green;' class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
 			data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
 			>prePublishChecks</button>
 	</div>
@@ -114,7 +114,7 @@
 			type="submit"
 			class="btn btn-default opReq"
 			data-loading-text="<span class='glyphicon glyphicon-refresh glyphicon-spin' aria-hidden='true'></span>" 
-			data-done-text="<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
+			data-done-text="<span style='color: green;' class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
 			data-error-text="<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
 			>publish</button>
 		
@@ -241,23 +241,30 @@ function publishOut(outStr) {
 	$('#publishOutput').append(
 		"<pre>" + outStr + "</pre>"
 		);
+	scrollDown();
 }
 
 function processPublish(data, btn) {
 	var trTmpl = $.templates('#statRow');
 	if (data.status == 'ok') {
 		btn.button('reset');
-		btnLabel(btn, 'checkPublishStat');
-		$('#processStatus').empty();
-		$('#processStatus').append(trTmpl.render({check: data.pubRunning, status: data.pubStatus}));
-		publishOut(data.pubOut);
-		if (data.pubStatus == "running") {
-			setTimeout(function(btn) {
-				$.get('ctrl?op=checkPublishStat', function(data) {
-					processPublish(data, btn)
-				});
-			}, 1000, btn);
+		if (data.pubStatus == 'okReady') {
+			btnDisabled(btn);
+			$('#compare').toggle(true);
+			scrollDown();
+		} else {
+			btnLabel(btn, 'checkPublishStat');
+			$('#processStatus').empty();
+			$('#processStatus').append(trTmpl.render({check: data.pubRunning, status: data.pubStatus}));
+			if (data.pubStatus == "running") {
+				setTimeout(function(btn) {
+					$.get('ctrl?op=checkPublishStat', function(data) {
+						processPublish(data, btn)
+					});
+				}, 1000, btn);
+			}
 		}
+		publishOut(data.pubOut);
 	}
 }
 
