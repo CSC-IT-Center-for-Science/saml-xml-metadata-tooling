@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -11,7 +12,11 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import fi.csc.virtu.samlxmltooling.Task;
+import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
+import fi.csc.virtu.samlxmltooling.tools.CertTool;
+import fi.csc.virtu.samlxmltooling.tools.ControllerTools;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
+import fi.csc.virtu.samlxmltooling.validator.ValidatorTask;
 
 public class PublishTask implements Task {
 	
@@ -41,6 +46,19 @@ public class PublishTask implements Task {
 		} catch (SAXException | IOException | ParserConfigurationException e) {
 			e.printStackTrace();
 			return false;
+		}
+	}
+	
+	public Map<String, String> runPrePublishChecks(MainConfiguration conf) {
+		try {
+			ValidatorTask vTask = new ValidatorTask(
+					publishDoc, 
+					CertTool.getFedCheckCert(myFlavor, conf),
+					conf,
+					myFlavor);
+			return vTask.prePublishChecks();
+		} catch (Exception e) {
+			return ControllerTools.putErrors(e);
 		}
 	}
 

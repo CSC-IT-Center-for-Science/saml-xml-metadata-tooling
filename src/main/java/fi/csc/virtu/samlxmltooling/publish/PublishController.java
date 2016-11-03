@@ -11,6 +11,7 @@ import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +34,10 @@ public class PublishController {
 	private final String POSTFILE_PAR = "importFile";
 	private Map<String, Task> taskList = new HashMap<String, Task>();
 	private Timer taskCleaner = new Timer();
+	
+	public enum ops {
+		prePublishChecks
+	}
 	
 	@Log
 	Logger log;
@@ -67,6 +72,23 @@ public class PublishController {
 		return retMap;
 	}
 	
+	@GetMapping(path="ctrl")
+	public Map<String, String> getOp(HttpSession session,
+			@RequestParam String op) {
+
+		PublishTask task = getTask(session);
+		if (task == null) {
+			return ControllerTools.getErrorMap("no task");
+		}
+
+		switch (ops.valueOf(op)) {
+			case prePublishChecks:
+				return task.runPrePublishChecks(conf);
+		}
+		
+		return ControllerTools.getErrorMap("nothing to do");
+	}
+	
 	private PublishTask getNewTask(HttpSession session, String flavor) {
 		if (ControllerTools.sessionHasTask(session, taskList)) {
 			taskList.remove(session.getId());
@@ -74,15 +96,21 @@ public class PublishController {
 		return getTask(session, flavor);
 	}
 	
-	private PublishTask getTask (HttpSession session, String flavor) {
-		final String sessionId = session.getId();
+	private PublishTask getTask(HttpSession session) {
 		if (ControllerTools.sessionHasTask(session, taskList)) {
-			return (PublishTask) taskList.get(sessionId);
+			return (PublishTask) taskList.get(session.getId());
 		} else {
-			PublishTask task = new PublishTask(flavor, docBuilder);
-			taskList.put(sessionId, task);
-			return task;
+			return null;
 		}
+	}
+	
+	private PublishTask getTask (HttpSession session, String flavor) {
+		PublishTask task = getTask(session);
+		if (task == null) {
+			task = new PublishTask(flavor, docBuilder);
+			taskList.put(session.getId(), task);
+		}
+		return task;
 	}
 	
 	@PostConstruct

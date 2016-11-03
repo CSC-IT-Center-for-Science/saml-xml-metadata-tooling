@@ -73,7 +73,7 @@ public class ValidatorController {
 			ControllerTools.putStatus(retMap, task.checkValidUntil());
 			break;
 		case checkSchema: 
-			ControllerTools.putStatus(retMap, task.checkSechema());
+			ControllerTools.putStatus(retMap, task.checkSchema());
 			break;
 		case checkSig:
 			ControllerTools.putStatus(retMap, task.checkSig());
@@ -137,7 +137,7 @@ public class ValidatorController {
 		if (ControllerTools.sessionHasTask(session, taskList)) {
 			return (ValidatorTask) taskList.get(sessionId);
 		} else {
-			ValidatorTask task = new ValidatorTask(sessionId, 
+			ValidatorTask task = new ValidatorTask( 
 					docBuilder.getCurrent(flavor),
 					CertTool.getFedCheckCert(flavor, conf),
 					conf,

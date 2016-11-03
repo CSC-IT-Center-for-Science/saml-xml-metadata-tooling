@@ -3,6 +3,8 @@ package fi.csc.virtu.samlxmltooling.validator;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import fi.csc.virtu.samlxmltooling.Task;
+import fi.csc.virtu.samlxmltooling.diffservlet.DiffController;
 import fi.csc.virtu.samlxmltooling.diffservlet.MainConfiguration;
 import fi.csc.virtu.samlxmltooling.tools.GeneralStrings;
 
@@ -17,7 +20,6 @@ public class ValidatorTask implements Task {
 	
 	private Document doc;
 	private X509Certificate checkCert;
-	private String ownerSessionId;
 	private String myFlavor;
 	private MainConfiguration conf;
 	private LocalDateTime latestAccess = LocalDateTime.now();
@@ -25,12 +27,11 @@ public class ValidatorTask implements Task {
 	
 	Logger log = LoggerFactory.getLogger(this.getClass());
 	
-	public ValidatorTask(String sessionId, 
+	public ValidatorTask( 
 			Document doc,
 			X509Certificate checkCert,
 			MainConfiguration conf,
 			String flavor) {
-		this.ownerSessionId = sessionId;
 		this.doc = doc;
 		this.checkCert = checkCert;
 		this.conf = conf;
@@ -41,10 +42,6 @@ public class ValidatorTask implements Task {
 		update();
 		return doc;
 	}
-	public String getOwnerSessionId() {
-		return ownerSessionId;
-	}
-	
 	@Override
 	public boolean isActive() {
 		Duration dur = Duration.between(LocalDateTime.now(), latestAccess);
@@ -65,7 +62,7 @@ public class ValidatorTask implements Task {
 		this.latestAccess = LocalDateTime.now();
 	}
 	
-	public boolean checkSechema() {
+	public boolean checkSchema() {
 		return SchemaValidatorTool.validate(doc, conf);
 	}
 	
@@ -87,6 +84,35 @@ public class ValidatorTask implements Task {
 		return CertChecker.certValidityInRange(doc, 
 				conf.getFedConfInt(myFlavor, GeneralStrings.PROP_FED_SIGCERTVALID_MIN), 
 				conf.getFedConfInt(myFlavor, GeneralStrings.PROP_FED_SIGCERTVALID_MAX));
+	}
+	
+	public Map<String, String> prePublishChecks() {
+		Map<String, String> retMap = new HashMap<String, String>();
+		retMap.put(
+				ValidatorController.ops.checkSchema.toString(),
+				resultStr(checkSchema())
+				);
+		retMap.put(
+				ValidatorController.ops.checkSig.toString(),
+				resultStr(checkSig())
+				);
+		retMap.put(
+				ValidatorController.ops.checkValidUntil.toString(),
+				resultStr(checkValidUntil())
+				);
+		retMap.put(
+				ValidatorController.ops.checkCertsEqual.toString(),
+				resultStr(checkCertsEqual())
+				);
+		retMap.put(
+				ValidatorController.ops.checkCertValidity.toString(),
+				resultStr(checkCertValidity())
+				);
+		return retMap;
+	}
+	
+	private String resultStr(Boolean result) {
+		return result ? DiffController.OK_STR : DiffController.ERROR_STR;
 	}
 	
 }
