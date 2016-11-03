@@ -51,6 +51,12 @@ public class ControllerTools {
 			}
 		};
 	}
+	
+	public static Map<String, String> getOkMap() {
+		Map<String, String> retMap = new HashMap<String, String>();
+		retMap.put(DiffController.STATUS_STR, DiffController.OK_STR);
+		return retMap;
+	}
 
 
 }

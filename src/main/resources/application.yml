@@ -17,6 +17,7 @@ my.validator.federationSpecs:
       sigCertValidMin: 30
       sigCertValidMax: 735
       publishFile: "/Users/klaalo/tmp/saml-tooling-folder/intern/virtu-metadata-dev.xml"
+      pubScript: "/Users/klaalo/git/saml-xml-metadata-tooling/src/main/sh/publish.sh"
    Haka:
       mdUrl: "https://haka.funet.fi/metadata/haka-metadata.xml"
       mdCertFile: "/Users/klaalo/Haka/haka-sign-v3.pem"

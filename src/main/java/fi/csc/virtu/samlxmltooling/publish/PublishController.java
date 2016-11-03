@@ -36,11 +36,16 @@ import fi.csc.virtu.samlxmltooling.xmldiffer.XmlDiffer;
 public class PublishController {
 	
 	private final String POSTFILE_PAR = "importFile";
+	public final static String PUBLISH_STATUS = "pubStatus";
+	public final static String PUBLISH_RUNNING = "pubRunning";
+	public final static String PUBLISH_OUT = "pubOut";
+
+
 	private Map<String, Task> taskList = new HashMap<String, Task>();
 	private Timer taskCleaner = new Timer();
 	
 	public enum ops {
-		prePublishChecks
+		prePublishChecks, publish, checkPublishStat
 	}
 	
 	@Log
@@ -112,8 +117,14 @@ public class PublishController {
 		}
 
 		switch (ops.valueOf(op)) {
-			case prePublishChecks:
-				return task.runPrePublishChecks(conf);
+		case prePublishChecks:
+			return task.runPrePublishChecks(conf);
+		case publish:
+			return task.getExecPublish(conf);
+		case checkPublishStat:
+			return task.getPublishStatus();
+		default:
+			break;
 		}
 		
 		return ControllerTools.getErrorMap("nothing to do");
