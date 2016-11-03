@@ -69,5 +69,17 @@ public class PublishTask implements Task {
 			return ControllerTools.putErrors(e);
 		}
 	}
+	
+	public String getFlavor() {
+		return myFlavor;
+	}
+	
+	public Document getDocument() {
+		if (isInit()) {
+			return publishDoc;
+		} else {
+			return null;
+		}
+	}
 
 }

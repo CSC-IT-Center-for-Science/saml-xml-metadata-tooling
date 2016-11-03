@@ -8,6 +8,7 @@ import java.util.Timer;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.xml.sax.SAXException;
 
 import com.github.vbauer.herald.annotation.Log;
 
@@ -26,6 +28,8 @@ import fi.csc.virtu.samlxmltooling.tools.ControllerTools;
 import fi.csc.virtu.samlxmltooling.tools.GeneralStrings;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
 import fi.csc.virtu.samlxmltooling.tools.TaskCleaner;
+import fi.csc.virtu.samlxmltooling.xmldiffer.Change;
+import fi.csc.virtu.samlxmltooling.xmldiffer.XmlDiffer;
 
 @RestController
 @RequestMapping("/publish/")
@@ -72,6 +76,29 @@ public class PublishController {
 		return retMap;
 	}
 	
+	@GetMapping(path="diff")
+	public String getDiff(HttpSession session) {
+
+		PublishTask task = getTask(session);
+		if (task == null) {
+			return "no task";
+		}
+		if (!task.isInit()) {
+			return "task not initialized";
+		}
+
+		try {
+			Change change = XmlDiffer.diff(
+					docBuilder.getCurrent(task.getFlavor()), 
+					task.getDocument()
+				);
+			return change.changeToString();
+		} catch (ParserConfigurationException | IOException | SAXException e) {
+			return "error";
+		}
+		
+	}
+	
 	@GetMapping(path="ctrl")
 	public Map<String, String> getOp(HttpSession session,
 			@RequestParam String op) {
@@ -79,6 +106,9 @@ public class PublishController {
 		PublishTask task = getTask(session);
 		if (task == null) {
 			return ControllerTools.getErrorMap("no task");
+		}
+		if (!task.isInit()) {
+			return ControllerTools.getErrorMap("task not initialized");
 		}
 
 		switch (ops.valueOf(op)) {

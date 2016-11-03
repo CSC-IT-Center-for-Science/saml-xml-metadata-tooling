@@ -29,6 +29,68 @@ public class Change {
 		change.addAll(list);
 	}
 	
+	public String changeToString() {
+		StringBuffer out = new StringBuffer();
+		StringBuffer tmpOut;
+		if (addedEntities.size() > 0) {
+			out.append("\n* Added entities:\n");
+			out.append(appendList(addedEntities));
+		}
+		if (removedEntities.size() > 0) {
+			out.append("\n* Removed entities:\n");
+			out.append(appendList(removedEntities));
+		}
+		tmpOut = appendChange(DiffObj.ChangeType.add,
+				X509Certificate.class);
+		if (tmpOut.length() > 0) {
+			out.append("\n* New certificates:\n");
+			out.append(tmpOut);
+		}
+		tmpOut = appendChange(DiffObj.ChangeType.remove,
+				X509Certificate.class);
+		if (tmpOut.length() > 0) {
+			out.append("\n* Retired certificates:\n");
+			out.append(tmpOut);
+		}
+		tmpOut = appendChange(DiffObj.ChangeType.add,
+				RequestedAttribute.class);
+		if (tmpOut.length() > 0) {
+			out.append("\n* New attribute requests:\n");
+			out.append(tmpOut);
+		}
+		tmpOut = appendChange(DiffObj.ChangeType.remove,
+				RequestedAttribute.class);
+		if (tmpOut.length() > 0) {
+			out.append("\n* Retired attribute requests:\n");
+			out.append(tmpOut);
+		}
+		tmpOut = appendChange(DiffObj.ChangeType.add,
+				SamlEndpoint.class);
+		if (tmpOut.length() > 0) {
+			out.append("\n* New endpoints:\n");
+			out.append(tmpOut);
+		}
+		tmpOut = appendChange(DiffObj.ChangeType.add,
+				SamlEndpoint.class);
+		if (tmpOut.length() > 0) {
+			out.append("\n* Retired endpoints:\n");
+			out.append(tmpOut);
+		}
+		tmpOut = appendChange(DiffObj.ChangeType.add,
+				DiscoveryEndpoint.class);
+		if (tmpOut.length() > 0) {
+			out.append("\n* New dsUrls:\n");
+			out.append(tmpOut);
+		}
+		tmpOut = appendChange(DiffObj.ChangeType.remove,
+				DiscoveryEndpoint.class);
+		if (tmpOut.length() > 0) {
+			out.append("\n* Retired dsUrls:\n");
+			out.append(tmpOut);
+		}
+		return out.toString();
+	}
+	
 	@Override
 	public String toString() {
 		StringBuffer out = new StringBuffer();
