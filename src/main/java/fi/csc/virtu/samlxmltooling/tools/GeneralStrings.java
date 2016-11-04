@@ -16,6 +16,7 @@ public class GeneralStrings {
 	public final static String PROP_FED_SIGCERTVALID_MIN = "sigCertValidMin";
 	public final static String PROP_FED_SIGCERTVALID_MAX = "sigCertValidMax";
 	public final static String PROP_FED_PUBLISH_SCRIPT = "pubScript";
+	public final static String PROP_FED_PUBLISH_PUBLIST = "publishUrls";
 	
 	public final static String PROP_FED_PUBLISH_FILE = "publishFileBase";
 	

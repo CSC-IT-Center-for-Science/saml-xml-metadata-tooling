@@ -46,7 +46,7 @@ public class PublishController {
 	private Timer taskCleaner = new Timer();
 	
 	public enum ops {
-		prePublishChecks, publish, checkPublishStat
+		prePublishChecks, publish, checkPublishStat, compare
 	}
 	
 	@Log
@@ -128,6 +128,8 @@ public class PublishController {
 			return task.getExecPublish(conf);
 		case checkPublishStat:
 			return task.getPublishStatus();
+		case compare:
+			return task.compare(conf);
 		default:
 			break;
 		}

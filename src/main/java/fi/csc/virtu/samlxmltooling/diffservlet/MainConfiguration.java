@@ -28,7 +28,7 @@ public class MainConfiguration {
 	private String currentUrlVirtu;
 	
 	private List<String> federations;
-	private String schemaDir;	
+	private String schemaDir;
 	
 	@Autowired
 	Environment env;
@@ -92,6 +92,12 @@ public class MainConfiguration {
 	@Bean
 	public SamlDocBuilder samlDocBuilderFactory() {
 		return new SamlDocBuilder();
+	}
+	
+	public String[] getFedConfArray(String fed, String prop) {
+		final String key = GeneralStrings.PROP_FED_PREFIX + fed + "." + prop;
+		return env.getRequiredProperty(key,
+				String[].class);
 	}
 	
 }

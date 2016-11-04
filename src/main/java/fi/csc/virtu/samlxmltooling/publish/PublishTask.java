@@ -186,5 +186,17 @@ public class PublishTask implements Task {
 	public String getPublishOutput() {
 		return processOut;
 	}
+	
+	public Map<String, String> compare(MainConfiguration conf) {
+		Map<String, String> retMap = ControllerTools.getOkMap();
+		final String prop = GeneralStrings.PROP_FED_PUBLISH_PUBLIST; 
+		String[] urls = conf.getFedConfArray(myFlavor, prop);
+		int count = 0;
+		for(String str: urls) {
+			retMap.put("url# " + count, str);
+			count++;
+		}
+		return retMap;
+	}
 
 }
