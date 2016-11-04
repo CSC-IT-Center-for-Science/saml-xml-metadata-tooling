@@ -10,6 +10,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,7 +71,11 @@ public class PublishController {
 		}
 
 		PublishTask task = getNewTask(session, flavor);
-		File publishFile = new File(conf.getFedConfStr(flavor, GeneralStrings.PROP_FED_PUBLISH_FILE));
+		String randomSuffix = RandomStringUtils.randomAlphanumeric(6);
+		File publishFile = new File(
+				conf.getFedConfStr(
+					flavor, GeneralStrings.PROP_FED_PUBLISH_FILE)  + "-" + randomSuffix
+				);
 		try {
 			requestFile.transferTo(publishFile);
 			ControllerTools.putStatus(retMap, task.fileIsDocifiable(publishFile));
