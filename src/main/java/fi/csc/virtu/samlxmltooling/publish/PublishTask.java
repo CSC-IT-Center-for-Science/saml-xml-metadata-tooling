@@ -3,8 +3,11 @@ package fi.csc.virtu.samlxmltooling.publish;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,6 +24,7 @@ import fi.csc.virtu.samlxmltooling.tools.CertTool;
 import fi.csc.virtu.samlxmltooling.tools.ControllerTools;
 import fi.csc.virtu.samlxmltooling.tools.GeneralStrings;
 import fi.csc.virtu.samlxmltooling.tools.SamlDocBuilder;
+import fi.csc.virtu.samlxmltooling.validator.Comparison;
 import fi.csc.virtu.samlxmltooling.validator.ValidatorTask;
 
 public class PublishTask implements Task {
@@ -188,15 +192,27 @@ public class PublishTask implements Task {
 	}
 	
 	public Map<String, String> compare(MainConfiguration conf) {
-		Map<String, String> retMap = ControllerTools.getOkMap();
 		final String prop = GeneralStrings.PROP_FED_PUBLISH_PUBLIST; 
 		String[] urls = conf.getFedConfArray(myFlavor, prop);
-		int count = 0;
+
+		List<Document> compList = new ArrayList<Document>();
+		compList.add(this.publishDoc);
+
 		for(String str: urls) {
-			retMap.put("url# " + count, str);
-			count++;
+			SamlDocBuilder docBuilder = conf.samlDocBuilderFactory();
+			try {
+				compList.add(docBuilder.getDoc(new URL(str)));
+			} catch (IOException | ParserConfigurationException | SAXException e) {
+				return ControllerTools.putErrors(e);
+			}
 		}
-		return retMap;
+
+		if (Comparison.identical(compList)) {
+			return ControllerTools.getOkMap();
+		} else {
+			return ControllerTools.getErrorMap("documents not identical");
+		}
+	
 	}
 
 }

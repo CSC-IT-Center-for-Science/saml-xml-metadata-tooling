@@ -60,7 +60,7 @@ public class SamlDocBuilder {
 		return fac.newDocumentBuilder();
 	}
 
-	private Document getDoc (URL url) throws IOException, ParserConfigurationException, SAXException {
+	public Document getDoc (URL url) throws IOException, ParserConfigurationException, SAXException {
 		return getBuilder().parse(url.toString());
 	}
 	
