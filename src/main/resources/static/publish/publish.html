@@ -290,6 +290,9 @@ $('button.opReq').on('click', function(event) {
 			case 'checkPublishStat':
 				processPublish(data, btn);
 				break;
+			case 'compare':
+				btnDisabled(btn);
+				break;
 			}
 		} else {
 			btn.button('error');
