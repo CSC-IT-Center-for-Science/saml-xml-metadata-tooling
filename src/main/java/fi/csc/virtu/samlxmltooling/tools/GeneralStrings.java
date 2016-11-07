@@ -20,6 +20,9 @@ public class GeneralStrings {
 	
 	public final static String PROP_FED_PUBLISH_FILE = "publishFileBase";
 	
+	public final static String PROP_FED_FLAVOR_VIRTU = "Virtu";
+	public final static String PROP_FED_FLAVOR_TEST = "Test";
+	
 	public final static String XPATH_FOR_MD_SIG_CERT =
 			"/*[local-name()='EntitiesDescriptor']/*[local-name()='Signature']/*[local-name()='KeyInfo']/*[local-name()='X509Data']/*[local-name()='X509Certificate']/text()";
 }

@@ -36,7 +36,7 @@ import fi.csc.virtu.samlxmltooling.xmldiffer.XmlDiffer;
 @RequestMapping("/publish/")
 public class PublishController {
 	
-	private final String POSTFILE_PAR = "importFile";
+	public final static String POSTFILE_PAR = "importFile";
 	public final static String PUBLISH_STATUS = "pubStatus";
 	public final static String PUBLISH_RUNNING = "pubRunning";
 	public final static String PUBLISH_OUT = "pubOut";
