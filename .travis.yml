@@ -1,7 +1,8 @@
 language: java
 jdk:
     - oraclejdk8
-install: true
+install:
+    - mkdir ext; curl -o ext/virtu-metadata-signing-crt-2015.pem https://confluence.csc.fi/download/attachments/34900746/virtu-metadata-signing-crt-2015.pem
 script:
     - mvn compile
 #after_success:
