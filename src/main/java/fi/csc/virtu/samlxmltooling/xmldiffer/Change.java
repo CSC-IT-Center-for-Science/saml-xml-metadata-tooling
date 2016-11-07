@@ -70,7 +70,7 @@ public class Change {
 			out.append("\n* New endpoints:\n");
 			out.append(tmpOut);
 		}
-		tmpOut = appendChange(DiffObj.ChangeType.add,
+		tmpOut = appendChange(DiffObj.ChangeType.remove,
 				SamlEndpoint.class);
 		if (tmpOut.length() > 0) {
 			out.append("\n* Retired endpoints:\n");
