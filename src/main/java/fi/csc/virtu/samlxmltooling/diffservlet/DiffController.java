@@ -37,8 +37,8 @@ public class DiffController {
 	public final static String ERROR_STR = "error";
 	public final static String OK_STR = "ok";
 	public final static String STATUS_STR ="status";
-	private final static String USAGE_PARAM_STR = "usage";
-	private final static String FILE_PARAM_STR = "file";
+	public final static String USAGE_PARAM_STR = "usage";
+	public final static String FILE_PARAM_STR = "file";
 
 	private Map<String, Task> taskList = new HashMap<String, Task>();
 	private Timer cleaner = new Timer();

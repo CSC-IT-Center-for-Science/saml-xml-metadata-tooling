@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -59,6 +60,16 @@ public class PublishControllerTest {
 	Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	private String[] postFile() throws IOException {
+		return postFile(ctrlUrl, 
+				PublishController.POSTFILE_PAR, 
+				Collections.emptyMap(), 
+				this.restTmpl);
+	}
+	
+	public static String[] postFile(String url,
+			String filePar,
+			Map<String, String> otherPars,
+			TestRestTemplate restTmpl) throws IOException {
 		File file = File.createTempFile(
 				RandomStringUtils.randomAlphanumeric(7), 
 				TMP_FILESUFFIX);
@@ -66,7 +77,14 @@ public class PublishControllerTest {
 		
 		
 		LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-		map.add(PublishController.POSTFILE_PAR, new FileSystemResource(file));
+		map.add(filePar, new FileSystemResource(file));
+
+		if (otherPars == null || otherPars.size() > 0) {
+			for (String key: otherPars.keySet()) {
+				map.add(key, otherPars.get(key));
+			}
+		}
+		
 		
 		HttpHeaders hdrs = new HttpHeaders();
 		hdrs.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -76,7 +94,7 @@ public class PublishControllerTest {
 	
 		@SuppressWarnings("rawtypes")
 		ResponseEntity<Map> resp =
-				this.restTmpl.postForEntity(ctrlUrl, request, Map.class);
+				restTmpl.postForEntity(url, request, Map.class);
 				
 		String status = (String) resp.getBody().get(DiffController.STATUS_STR);
 		
