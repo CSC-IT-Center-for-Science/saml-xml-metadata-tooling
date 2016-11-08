@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/CSC-IT-Center-for-Science/saml-xml-metadata-tooling.svg?branch=xmltooling-dev)](https://travis-ci.org/CSC-IT-Center-for-Science/saml-xml-metadata-tooling)
+[![Coverage Status](https://coveralls.io/repos/github/CSC-IT-Center-for-Science/saml-xml-metadata-tooling/badge.svg)](https://coveralls.io/github/CSC-IT-Center-for-Science/saml-xml-metadata-tooling)
 # SAML XML Metadata Tooling
 
 This project aims to create a set of tools for SAML metadata handling. First aim
