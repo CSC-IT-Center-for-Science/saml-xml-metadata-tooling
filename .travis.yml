@@ -4,11 +4,12 @@ jdk:
 env:
   global:
     secure: bSdJlkOkTx3NA0kQ6uZid1LsjvwALzaqkD5YRXOHJuc13mV2FjYB3GqYUpzlbBrJ9IwjyqwvIMCyJwiy1S8ZD0ClZXVKnEQxH/gAKHpD3Yr0WP6rKKyVWdJIWWB5nbprr/kdZ3dRb19rrEXH/3PFPaehpJNCM3T+fNjnRCS81j7AUIf4f0mbm3vXD/usfEVZBFUXVY5knNjtYteC4rJtqaAsDzKq1nA/0OPAPj2rfI+8KqPgaqHezq/6E9FEzkgJHGKDLttjo2rDFOQzzEcEivvTQzf/a+wmbBCY0TRSyNISlHEOsMMido6SakHNhF8IUbXIExarEj5tx3qUeNtCuxdSuzgCAay8lIDXLcOOngqHdnXQbRf5OapsUM+rXC7JCfnIhzwkrCwsPmpn3zg+eWbAcI+24TDt2MCAy3/g2CB2HtWS6ymkYwY0MXxaGKLdOKIot1eUPT96ZhH3DqtTwbQ80f/l3E52zOnebptnySXqKycLUCOL2FK4GFdrrqWZCx65dZ5AiI5jSywPmi7dA1YVdDH9NBJc1AC9ITDErRb/m+4MatBnD2m20nxd+X8xx8lWvgSINWwTtuWX9LF9ROZFQpMNrsGTyPmCDMSQyeR6eWoGQfkv5NEHmuidcbaiTuWp+VC/whaod9Y56T13JaLtsyB0GjJEkPlmZASooT4=
+sudo: required
 before_install:
 - mkdir ext
 - curl -o ext/metadata_schema.tgz.gpg https://kannu.csc.fi/s/uhEVC2Zc8NRoaGx/download
 - echo $secret_password | gpg --passphrase-fd 0 ext/metadata_schema.tgz.gpg
-- cp src/main/sh/jaxp.properties /usr/lib/jvm/java-7-oracle/jre/lib/
+- sudo cp src/main/sh/jaxp.properties /usr/lib/jvm/java-7-oracle/jre/lib/
 install:
 - curl -o ext/virtu-metadata-signing-crt-2015.pem https://confluence.csc.fi/download/attachments/34900746/virtu-metadata-signing-crt-2015.pem
 - tar -C ext/ -xzf ext/metadata_schema.tgz
