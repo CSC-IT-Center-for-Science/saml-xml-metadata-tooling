@@ -1,7 +1,6 @@
 package fi.csc.virtu.samlxmltooling;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,8 +10,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.tomcat.util.http.fileupload.UploadContext;
-import org.custommonkey.xmlunit.DifferenceConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
