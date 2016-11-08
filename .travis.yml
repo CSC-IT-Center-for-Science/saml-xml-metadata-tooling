@@ -8,6 +8,7 @@ before_install:
 - mkdir ext
 - curl -o ext/metadata_schema.tgz.gpg https://kannu.csc.fi/s/uhEVC2Zc8NRoaGx/download
 - echo $secret_password | gpg --passphrase-fd 0 ext/metadata_schema.tgz.gpg
+- cp src/main/sh/jaxp.properties /usr/lib/jvm/java-7-oracle/jre/lib/
 install:
 - curl -o ext/virtu-metadata-signing-crt-2015.pem https://confluence.csc.fi/download/attachments/34900746/virtu-metadata-signing-crt-2015.pem
 - tar -C ext/ -xzf ext/metadata_schema.tgz
