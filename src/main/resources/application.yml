@@ -12,11 +12,12 @@ my.validator.federationSpecs:
    Virtu:
       mdUrl: "https://virtu-ds.csc.fi/fed/virtu/virtu-metadata-v3.xml"
       mdCertFile: "ext/virtu-metadata-signing-crt-2015.pem"
-      validUntilMin: 27
+      validUntilMin: 24
       validUntilMax: 32
       sigCertValidMin: 30
       sigCertValidMax: 735
-      publishFileBase: "/Users/klaalo/tmp/saml-tooling-folder/intern/virtu-metadata-dev.xml"
+      #publishFileBase: "/Users/klaalo/tmp/saml-tooling-folder/intern/virtu-metadata-dev.xml"
+      publishFileBase: "/tmp/virtu-metadata-dev.xml"
       pubScript: "sh/publish.sh"
       publishUrls:
         https://virtu-ds02.csc.fi/fed/virtu/virtu-metadata-v3.xml,
@@ -31,7 +32,7 @@ my.validator.federationSpecs:
    Test:
       mdUrl: "https://virtu-ds.csc.fi/fed/virtu/virtu-metadata-v3.xml"
       mdCertFile: "ext/virtu-metadata-signing-crt-2015.pem"
-      validUntilMin: 27
+      validUntilMin: 14
       validUntilMax: 32
       sigCertValidMin: 30
       sigCertValidMax: 735
