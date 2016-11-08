@@ -1,10 +1,14 @@
 language: java
 jdk:
     - oraclejdk8
+before_install:
+   - curl -o ext/metadata_schema.tgz.gpg https://kannu.csc.fi/s/uhEVC2Zc8NRoaGx
+   - echo $secret_password | gpg --passphrase-fd 0 ext/metadata_schema.tgz.gpg
 install:
     - mkdir ext
     - curl -o ext/virtu-metadata-signing-crt-2015.pem https://confluence.csc.fi/download/attachments/34900746/virtu-metadata-signing-crt-2015.pem
-script:
-    - mvn compile
+    - tar -C ext/ -xzf ext/metadata_schema.tgz
+#script:
+#    - mvn compile
 #after_success:
 #    - mvn clean verify
