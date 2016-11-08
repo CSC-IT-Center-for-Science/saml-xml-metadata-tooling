@@ -13,3 +13,5 @@ before_install:
 install:
 - curl -o ext/virtu-metadata-signing-crt-2015.pem https://confluence.csc.fi/download/attachments/34900746/virtu-metadata-signing-crt-2015.pem
 - tar -C ext/ -xzf ext/metadata_schema.tgz
+- ls -l ext/
+- ls -l ext/metadata_schema/
