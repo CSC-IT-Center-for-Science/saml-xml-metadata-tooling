@@ -167,7 +167,7 @@ public class PublishTask implements Task {
 			String cmd = conf.getFedConfStr(myFlavor, 
 					GeneralStrings.PROP_FED_PUBLISH_SCRIPT);
 			this.myProcess = Runtime.getRuntime().exec(
-					new String[]{"/bin/sh", cmd, "hhh"});
+					new String[]{"/bin/sh", cmd, publishFile.getAbsolutePath()});
 			publishStarted = LocalDateTime.now();
 			translateExitLevel();
 		} catch (IOException e) {
